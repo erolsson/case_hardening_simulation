@@ -4,7 +4,8 @@ import re
 import subprocess
 
 import numpy as np
-
+import abaqus_python
+import case_hardening_simulations
 from case_hardening_simulations.utilities.display_functions import list_interaction_properties
 from case_hardening_simulations.case_hardening_toolbox.case_hardening_toolbox import CaseHardeningToolbox
 
