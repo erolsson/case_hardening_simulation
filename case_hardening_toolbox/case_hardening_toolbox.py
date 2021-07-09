@@ -1,0 +1,819 @@
+from __future__ import print_function
+
+import shutil
+
+from utilities.config import package_directory, abq, dante_umat, dante_material_library, python
+
+from case_hardening_toolbox.diffusivity import write_diffusion_file, read_composition_file
+from input_file_reader.input_file_reader import InputFileReader
+from case_hardening_toolbox.common import heat_sim_fields
+
+
+# noinspection PyInterpreter
+class CaseHardeningToolbox:
+    def __init__(self, heat_simulation_parameters, config_filename=None):
+        """
+        :param heat_simulation_parameters   Data for the heat treatment simulations of the type HeatTreatmentData
+        :param config_filename              A path to the config file that sets different paths for Dante
+        """
+
+        self.simulation_directory = heat_simulation_parameters.simulation_directory
+        self.name = heat_simulation_parameters.name
+        self.input_file = heat_simulation_parameters.input_filename
+        self._include_file_directory = heat_simulation_parameters.include_file_directory
+        self._include_file_name = heat_simulation_parameters.include_file_name
+
+        self.material = heat_simulation_parameters.material
+        self.boundary_condition_file = heat_simulation_parameters.bc_filename
+        self.interaction_property_directory = package_directory / "case_hardening_toolbox" / "interaction_properties"
+
+        if config_filename is None:
+            config_filename = package_directory / "heat_sim_config.cfg"
+
+        config_data = {}
+        with open(config_filename, 'r') as config_file:
+            config_lines = config_file.readlines()
+            for line in config_lines:
+                try:
+                    keyword, data = line.split('=')
+                except ValueError:
+                    raise ValueError("config data must be on the form *keyword=data")
+                if keyword.startswith('*') and not keyword.startswith('**'):
+                    config_data[keyword[1:]] = data
+
+        self._carbon_file_lines = None
+        self._thermal_file_lines = None
+        self._mechanical_file_lines = None
+
+        self._total_time = 0.
+        self._thermal_step_counter = 1
+
+        self.dante_file = dante_umat
+        self.dante_version = int(self.dante_file.stem[5:6])
+
+        self.abaqus_path = abq
+        self.dante_standard_material_library = dante_material_library
+        self.dante_user_material_library = package_directory / "materials" / ("dante_" + str(self.dante_version))
+
+        # This is settings for dante 3
+        # ToDo: Extend for Dante 4 and Dante 5
+        self.num_depvar = 100
+        self.carbon_field_var = 1
+        self.kinematic_mode_var = 2
+        self.tempering_kinematic_mode = -3
+
+        # Convergence settings for dante
+        self.max_temp_inc = 30
+        self.max_vf_inc = 0.05
+        self.max_carb_inc = 0.0005
+
+        self.carbon_potential = heat_simulation_parameters.carbon_potential
+        self.carburization_temperature = heat_simulation_parameters.carburization_temperature
+        self.initial_temperature = self.carburization_temperature[0, 1]
+        if heat_simulation_parameters.initial_carbon is None:
+            composition_file = self.dante_user_material_library / "USR" / self.material / (self.material + '.COM')
+            if not composition_file.is_file():
+                raise ValueError("No composition file written for " + self.material
+                                 + ". Please specify an initial carbon content of the material")
+            composition = read_composition_file(composition_file)
+            self.initial_carbon = composition['C']/100
+        else:
+            self.initial_carbon = heat_simulation_parameters.initial_carbon
+
+        self.carburization_bc = heat_simulation_parameters.carburization_bc
+
+        self.diffusion_file = self.dante_user_material_library / "USR" / self.material / (self.material + '.CDI')
+        self.write_diffusion_file = False
+        if not self.diffusion_file.is_file():
+            self.diffusion_file = self._include_file_directory / "diffusivity.inc"
+            self.write_diffusion_file = True
+
+        self.cooling_data = heat_simulation_parameters.cooling_data
+        self.interaction_properties = set([cooling_step.interaction_property for cooling_step in self.cooling_data])
+        self.interaction_properties.add('HOT_AIR')
+        self.monitor_node = None
+        self.tempering_data = heat_simulation_parameters.tempering_data
+        if self.tempering_data is not None:
+            self.final_dante_temperature = self.tempering_data[-1].temperature
+        self.final_temperature = heat_simulation_parameters.final_temperature
+        self.run_cooling_simulation = not self.final_temperature == self.final_dante_temperature
+
+    def _init_carbon_file_lines(self):
+        carbon_lines = ['**',
+                        '**',
+                        '** Autogenerated input file created by Case Hardening Simulation Toolbox, version 0.8.1',
+                        '** Written by Niklas Melin and Erik Olsson',
+                        '**',
+                        '*Heading',
+                        '\t Case Hardening Simulation Toolbox - Carburization - Niklas Melin 2012',
+                        '*Preprint, echo=NO, model=NO, history=NO, contact=NO',
+                        '**',
+                        '** ----------------------------------------------------------------',
+                        '** Load required include files',
+                        '**',
+                        '**   Load geometry',
+                        '*INCLUDE, INPUT = ' + str(self._include_file_directory
+                                                   / ('Toolbox_Carbon_' + self._include_file_name + '_geo.inc')),
+                        '** Load geometry set definitions',
+                        '*INCLUDE, INPUT = ' + str(self._include_file_directory /
+                                                   (self._include_file_name + '_sets.inc')),
+                        '**',
+                        '** ----------------------------------------------------------------',
+                        '**',
+                        '**   Define material properties',
+                        '**',
+                        '*Solid Section, elset=All_Elements, material=' + self.material,
+                        '\t1.0',
+                        '*Hourglass Stiffness',
+                        '\t225.0, 0.0, 0.0',
+                        '**',
+                        '** DEFINE MATERIAL PROPERTIES',
+                        '**',
+                        '*Material, name=' + self.material,
+                        '\t*Density',
+                        '\t\t7.83e-06,',
+                        '\t*Diffusivity',
+                        '\t\t*INCLUDE, INPUT = ' + str(self.diffusion_file),
+                        '\t*Solubility',
+                        '\t\t1.0',
+                        '**']
+
+        carbon_pot_lines = []
+        temperature_lines = []
+        for time, temp in self.carburization_temperature:
+            temperature_lines.append('\t{:<10}{:<10}'.format(str(time) + ',', temp))
+        for time, carb in self.carbon_potential:
+            carbon_pot_lines.append('\t{:<10}{:<10}'.format(str(time) + ',', carb))
+        carbon_lines.append('*Amplitude, name=temperature, time=total time')
+        carbon_lines.extend(temperature_lines)
+        carbon_lines.append('*Amplitude, name=carbon_potential, time=total time')
+        carbon_lines.extend(carbon_pot_lines)
+        carbon_lines.append('*INITIAL CONDITIONS, TYPE=CONCENTRATION')
+        carbon_lines.append('\tAll_Nodes , {c}'.format(c=self.initial_carbon))
+        carbon_lines.append('*INITIAL CONDITIONS, TYPE=TEMPERATURE')
+        carbon_lines.append('\tAll_Nodes , {T}'.format(T=self.initial_temperature))
+        carbon_lines.append('**')
+        return carbon_lines
+
+    # noinspection PyListCreation
+    def _init_thermal_lines(self):
+        file_lines = ['**',
+                      '**',
+                      '** Autogenerated input file created by Case Hardening Simulation Toolbox, version 0.8.1',
+                      '** Written by Niklas Melin and Erik Olsson',
+                      '**',
+                      '*Heading',
+                      '\t Case Hardening Simulation Toolbox - Thermal - Niklas Melin 2012',
+                      '*Preprint, echo=NO, model=NO, history=NO, contact=NO',
+                      '**',
+                      '** ----------------------------------------------------------------',
+                      '** Load required include files',
+                      '**',
+                      '**   Load geometry',
+                      '*INCLUDE, INPUT = ' + str(self._include_file_directory
+                                                 / ('Toolbox_Thermal_' + self._include_file_name + '_geo.inc')),
+                      '** Load geometry set definitions',
+                      '*INCLUDE, INPUT = ' + str(self._include_file_directory
+                                                 / (self._include_file_name + '_sets.inc')),
+                      '**',
+                      '** ----------------------------------------------------------------',
+                      '**',
+                      '**   Define material properties',
+                      '**',
+                      '*Solid Section, elset=All_Elements, material=' + self.material,
+                      '\t1.0',
+                      '*Hourglass Stiffness',
+                      '\t225.0, 0.0, 0.0',
+                      '**',
+                      '** DEFINE MATERIAL PROPERTIES',
+                      '**',
+                      '*Material, name=' + self.material,
+                      '\t*Density',
+                      '\t\t7.83e-06,',
+                      '\t*Depvar',
+                      '\t\t' + str(self.num_depvar) + ',',
+                      '\t\t1,  CARBON,       VOLUME FRACTION of CARBON',
+                      '\t\t2,  HARDNESS,     Hardness in Rockwell C',
+                      '\t\t21, AUSTENITE,    VOLUME FRACTION of AUSTENITE',
+                      '\t\t34, FERRITE,      VOLUME FRACTION of FERRITE',
+                      '\t\t47, PEARLITE,     VOLUME FRACTION of PEARLITE',
+                      '\t\t60, UBAINITE,     VOLUME FRACTION of UPPER BAINITE',
+                      '\t\t73, LBAINITE,     VOLUME FRACTION of LOWER BAINITE',
+                      '\t\t86, Q_MARTENSITE, VOLUME FRACTION of QUENCHED MARTENSITE',
+                      '\t\t99, T_MARTENSITE, VOLUME FRACTION of TEMPERED MARTENSITE',
+                      '\t*User Material, constants=8, type=THERMAL',
+                      '\t\t7.83e-06, 0, 0.50, 0.50, 0.00, 0.00, 0.00, 0.00',
+                      '**',
+                      '** ----------------------------------------------------------------',
+                      '** ----------------------------------------------------------------',
+                      '** Set initial temperature',
+                      '*INITIAL CONDITIONS, TYPE=TEMPERATURE',
+                      '\tALL_NODES , ' + str(self.initial_temperature),
+                      '**',
+                      '** Set analysis kinematics type to -8, (2 heating up kinetics, -2'
+                      ' cooling kinetics without tempering',
+                      '*INITIAL CONDITIONS, TYPE=FIELD, VAR=' + str(self.kinematic_mode_var),
+                      '\tALL_NODES , -8',
+                      '** Set initial carbon content',
+                      '*INITIAL CONDITIONS, TYPE=FIELD, VAR=' + str(self.carbon_field_var),
+                      '\tALL_NODES , ' + str(self.initial_carbon),
+                      '**']
+        temperature_lines = []
+
+        for time, temp in self.carburization_temperature:
+            temperature_lines.append('\t{:<10}{:<10}'.format(str(time) + ',', temp))
+        file_lines.append('*Amplitude, name=temperature, time=total time')
+        file_lines.extend(temperature_lines)
+
+        # Include the given interaction property files
+        file_lines.append('** Including needed interaction properties')
+        for interaction_property in self.interaction_properties:
+            file_lines.append('*INCLUDE, INPUT = ' + str(self.interaction_property_directory /
+                                                         interaction_property) + '.inc')
+
+        return file_lines
+
+    def _init_mechanical_lines(self):
+        return ['**',
+                '**',
+                '** Autogenerated input file created by Case Hardening Simulation Toolbox, version 0.8.1',
+                '** Written by Niklas Melin and Erik Olsson',
+                '**',
+                '*Heading',
+                '\t Case Hardening Simulation Toolbox - Mechanical - Niklas Melin 2012',
+                '*Preprint, echo=NO, model=NO, history=NO, contact=NO',
+                '**',
+                '** ----------------------------------------------------------------',
+                '** Load required include files',
+                '**',
+                '**   Load geometry',
+                '*INCLUDE, INPUT = ' + str(self._include_file_directory / ('Toolbox_Mechanical_'
+                                           + self._include_file_name + '_geo.inc')),
+                '** Load geometry set definitions',
+                '*INCLUDE, INPUT = ' + str(self._include_file_directory / (self._include_file_name + '_sets.inc')),
+                '**',
+                '** ----------------------------------------------------------------',
+                '**',
+                '**   Define material properties',
+                '**',
+                '*Solid Section, elset=All_Elements, material=' + self.material,
+                '\t1.0',
+                '*Hourglass Stiffness',
+                '\t225.0, 0.0, 0.0',
+                '**',
+                '** DEFINE MATERIAL PROPERTIES',
+                '**',
+                '*Material, name=' + self.material,
+                '\t*Density',
+                '\t\t7.83e-06,',
+                '\t*Depvar',
+                '\t\t' + str(self.num_depvar) + ',',
+                '\t\t1,  CARBON,       VOLUME FRACTION of CARBON',
+                '\t\t2,  HARDNESS,     Hardness in Rockwell C',
+                '\t\t5,  PLASTIC STRAIN, EFFECTIVE PLASTIC STRAIN',
+                '\t\t21, AUSTENITE,    VOLUME FRACTION of AUSTENITE',
+                '\t\t34, FERRITE,      VOLUME FRACTION of FERRITE',
+                '\t\t47, PEARLITE,     VOLUME FRACTION of PEARLITE',
+                '\t\t60, UBAINITE,     VOLUME FRACTION of UPPER BAINITE',
+                '\t\t73, LBAINITE,     VOLUME FRACTION of LOWER BAINITE',
+                '\t\t86, Q_MARTENSITE, VOLUME FRACTION of QUENCHED MARTENSITE',
+                '\t\t99, T_MARTENSITE, VOLUME FRACTION of TEMPERED MARTENSITE',
+                '\t*User Material, constants=8, type=MECHANICAL',
+                '\t\t1, 0, 0.50, 0.50, 0.00, 0.00, 0.00, 0.00',
+                '**',
+                '** Set initial temperature',
+                '*INITIAL CONDITIONS, TYPE=TEMPERATURE',
+                '\tALL_NODES , ' + str(20.),
+                '**',
+                '** Set initial carbon content',
+                '*INITIAL CONDITIONS, TYPE=FIELD, VAR=' + str(self.carbon_field_var),
+                '\tALL_NODES , ' + str(self.initial_carbon),
+                '**',
+                '** Set analysis kinematics type to -8, (2 heating up kinetics, -2 cooling kinetics without tempering',
+                '*INITIAL CONDITIONS, TYPE=FIELD, VAR=' + str(self.kinematic_mode_var),
+                '\tALL_NODES , -8',
+                '**',
+                '*INCLUDE, INPUT = ' + str(self._include_file_directory / (self._include_file_name + '_BC.inc'))]
+
+    @staticmethod
+    def _add_inital_conditions_for_dante_4():
+        file_lines = ['** Initial Grain Size (NOT ACTIVATED IN DANTE 4.0)',
+                      '*Initial Conditions, type=field, var=2',
+                      '\tALL_NODES, 0',
+                      '**----------------------------------------------------------------',
+                      '** Initial Carbon in Carbide A Form',
+                      '*Initial Conditions, type=field, var=4',
+                      '\tALL_NODES, 0',
+                      '**----------------------------------------------------------------',
+                      '** Initial Size of Carbide A',
+                      '*Initial Conditions, type=field, var=5',
+                      '\tALL_NODES, 0',
+                      '**----------------------------------------------------------------',
+                      '** Initial Carbon in Carbide B Form (NEED USER DATA TO ACTIVATE)',
+                      '*Initial Conditions, type=field, var=6',
+                      '\tALL_NODES, 0',
+                      '**----------------------------------------------------------------',
+                      '** Initial Size of Carbide B (NEED USER DATA TO ACTIVATE)',
+                      '*Initial Conditions, type=field, var=7',
+                      '\tALL_NODES, 0',
+                      '**----------------------------------------------------------------',
+                      '** Initial Nitrogen',
+                      '*Initial Conditions, type=field, var=8',
+                      '\tALL_NODES, 0',
+                      '**----------------------------------------------------------------',
+                      '** Initial Nitrogen in Nitride A Form',
+                      '*Initial Conditions, type=field, var=9',
+                      '\tALL_NODES, 0',
+                      '**----------------------------------------------------------------',
+                      '** Initial Size of Nitride A',
+                      '*Initial Conditions, type=field, var=10',
+                      '\tALL_NODES, 0',
+                      '**----------------------------------------------------------------',
+                      '** Initial Nitrogen in Nitride B Form (NEED USER DATA TO ACTIVATE)',
+                      '*Initial Conditions, type=field, var=11',
+                      '\tALL_NODES, 0',
+                      '**----------------------------------------------------------------',
+                      '** Initial Size of Nitride B (NEED USER DATA TO ACTIVATE)',
+                      '*Initial Conditions, type=field, var=12',
+                      '\tALL_NODES, 0',
+                      '**----------------------------------------------------------------']
+        return file_lines
+
+    def _write_carburization_step(self, step_name, t1, t2, exposed_surface_sides):
+        self._carbon_file_lines.append('*STEP,NAME=' + step_name + ', INC=10000')
+        self._carbon_file_lines.append('\t' + step_name + ' - Total time: ' + str(t1) + ' - ' +
+                                       str(t2) + 's')
+        self._carbon_file_lines.append('\t*MASS DIFFUSION, DCMAX=0.1')
+        self._carbon_file_lines.append('\t\t0.2,  ' + str(t2 - t1) + ', 1e-05,  10000')
+        self._carbon_file_lines.append('\t*TEMPERATURE, AMPLITUDE=temperature')
+        self._carbon_file_lines.append('\t\tAll_Nodes')
+        if self.carburization_bc == "carbon_potential":
+            self._carbon_file_lines.append('\t*BOUNDARY, AMPLITUDE=carbon_potential')
+            self._carbon_file_lines.append('\t\tEXPOSED_NODES, 11, 11, 1.')
+        elif self.carburization_bc == "mass_transfer":
+            self._carbon_file_lines.append('\t*DFLUX, AMPLITUDE=carbon_potential')
+            for surface_side in exposed_surface_sides:
+                self._carbon_file_lines.append('\t\tEXPOSED_ELEMENTS_' + str(surface_side)
+                                               + ', S' + str(surface_side) + 'NU, 1.')
+        else:
+            raise ValueError("Invalid carburization boundary condition", self.carburization_bc)
+        if self.monitor_node is not None:
+            self._carbon_file_lines.append('\t*MONITOR, NODE=monitor_node, DOF=11, FREQ=1')
+        self._carbon_file_lines.append('\t*Output, field, frequency=1')
+        self._carbon_file_lines.append('\t\t*Node Output')
+        self._carbon_file_lines.append('\t\t\tNNC, NT, RFL')
+        self._carbon_file_lines.append('\t\t*Element Output, directions=YES')
+        self._carbon_file_lines.append('\t\t\tCONC, MFL')
+        self._carbon_file_lines.append('\t\t*Element Output, directions=YES,  POSITION=NODES')
+        self._carbon_file_lines.append('\t\t\tCONC, MFL')
+        self._carbon_file_lines.append('*END STEP')
+        self._carbon_file_lines.append('**')
+
+        self._thermal_file_lines.append('*STEP,NAME=' + step_name + ', INC=10000')
+        self._thermal_file_lines.append('\t*HEAT TRANSFER, DELTMX=10.0, END=PERIOD')
+        self._thermal_file_lines.append('\t\t0.01,  ' + str(t2 - t1) + ', 1e-05,  10000')
+        self._thermal_file_lines.append('\t*CONTROLS, PARAMETERS = LINE SEARCH')
+        self._thermal_file_lines.append('\t\t6,')
+        self._thermal_file_lines.append('\t*CONTROLS, PARAMETERS = TIME INCREMENTATION')
+        self._thermal_file_lines.append('\t\t20, 30')
+        self._thermal_file_lines.append('\t*CONTROLS, FIELD = TEMPERATURE, PARAMETERS = FIELD')
+        self._thermal_file_lines.append('\t\t0.05, 0.05')
+        self._thermal_file_lines.append('\t*SFILM, OP = NEW, AMPLITUDE=TEMPERATURE')
+        self._thermal_file_lines.append('\t\tEXPOSED_SURFACE, F, 1.000000, HOT_AIR')
+        self._thermal_file_lines.append('\t*MONITOR, NODE = MONITOR_NODE, DOF=11, FREQ=1')
+        self._thermal_file_lines.append('\t*RESTART, WRITE, FREQ=1000')
+        self._thermal_file_lines.append('\t*OUTPUT, FIELD, FREQ=1')
+        self._thermal_file_lines.append('\t\t*ELEMENT OUTPUT')
+        self._thermal_file_lines.append('\t\t\tSDV1, SDV21, SDV34, SDV47, SDV60, SDV73, SDV86, HFL')
+        self._thermal_file_lines.append('\t*OUTPUT, FIELD, FREQ=1')
+        self._thermal_file_lines.append('\t\t*NODE OUTPUT')
+        self._thermal_file_lines.append('\t\t\tNT')
+        self._thermal_file_lines.append('\t*EL FILE, FREQUENCY=0')
+        self._thermal_file_lines.append('\t*NODE FILE, FREQUENCY=1')
+        self._thermal_file_lines.append('\t\tNT')
+        self._thermal_file_lines.append('\t*EL PRINT, FREQ=0')
+        self._thermal_file_lines.append('\t*NODE PRINT, FREQ=0')
+        self._thermal_file_lines.append('*END STEP')
+        self._thermal_file_lines.append('**')
+
+        self._mechanical_file_lines.append('*STEP,NAME=' + step_name + ', INC=10000')
+        self._mechanical_file_lines.append('\tMechanical simulation')
+        self._mechanical_file_lines.append('\t*STATIC')
+        self._mechanical_file_lines.append('\t\t0.01,  ' + str(t2 - t1) + ', 1e-05,  10000')
+        self._mechanical_file_lines.append('\t*TEMPERATURE, FILE=Toolbox_Thermal_' + self.name + '.odb, '
+                                           'BSTEP=' + str(self._thermal_step_counter) + ', ESTEP=' +
+                                           str(self._thermal_step_counter))
+        self._mechanical_file_lines.append('\t** Add convergence control parameters')
+        self._mechanical_file_lines.append('\t*CONTROLS, PARAMETERS = LINE  SEARCH')
+        self._mechanical_file_lines.append('\t\t6,')
+        self._mechanical_file_lines.append('\t*CONTROLS, PARAMETERS = TIME INCREMENTATION')
+        self._mechanical_file_lines.append('\t\t20, 30')
+        self._mechanical_file_lines.append('\t*CONTROLS, FIELD = DISPLACEMENT, PARAMETERS = FIELD')
+        self._mechanical_file_lines.append('\t\t0.05, 0.05')
+        self._mechanical_file_lines.append('\t** Add output variables')
+        self._mechanical_file_lines.append('\t*RESTART, WRITE, FREQ = 1000')
+        self._mechanical_file_lines.append('\t*MONITOR, NODE = MONITOR_NODE, DOF = 1, FREQ = 1')
+        self._mechanical_file_lines.append('\t*OUTPUT, FIELD, FREQ = 10')
+        self._mechanical_file_lines.append('\t\t*ELEMENT OUTPUT, directions = YES')
+        self._mechanical_file_lines.append('\t\t\tS, E')
+        self._mechanical_file_lines.append('\t*OUTPUT, FIELD, FREQ = 10')
+        self._mechanical_file_lines.append('\t\t*ELEMENT OUTPUT')
+        self._mechanical_file_lines.append('\t\t\tSDV1, SDV2, SDV5, SDV21, SDV34, SDV47, SDV60, SDV73, SDV86, SDV99')
+        self._mechanical_file_lines.append('\t*OUTPUT, FIELD, FREQ = 10')
+        self._mechanical_file_lines.append('\t\t*NODE OUTPUT')
+        self._mechanical_file_lines.append('\t\t\tNT, U')
+        self._mechanical_file_lines.append('*END  STEP')
+        self._mechanical_file_lines.append('**')
+        self._thermal_step_counter += 1
+
+    def _thermal_step_data(self, step_name, step_time, surface_temperature, interaction_property,
+                           kinematic_mode, output_frequency=5, step_amp='STEP', add_carbon=False):
+        file_lines = ['*STEP,NAME=' + step_name + ' , INC=10000, AMP=' + step_amp,
+                      '\t*HEAT TRANSFER, DELTMX=10.0, END=PERIOD',
+                      '\t\t0.01,  ' + str(step_time) + ', 1e-09,  1000.',
+                      '\t*FIELD, OP=NEW, VAR = ' + str(self.kinematic_mode_var),
+                      '\t\tAll_Nodes, ' + str(kinematic_mode),
+                      '\t*SFILM, OP=NEW',
+                      '\t\tEXPOSED_SURFACE,F, ' + str(surface_temperature) + ', ' + interaction_property]
+        if add_carbon:
+            file_lines.append('\t*FIELD, VAR=' + str(self.carbon_field_var) + ',  INPUT=Toolbox_Carbon_'
+                              + self.name + '.nod')
+
+        file_lines.extend(['\t*MONITOR, NODE=MONITOR_NODE, DOF=11, FREQ=1',
+                           '\t*CONTROLS, PARAMETERS=LINE SEARCH',
+                           '\t\t 6,',
+                           '\t*CONTROLS, PARAMETERS=TIME INCREMENTATION',
+                           '\t\t10, 20',
+                           '\t*CONTROLS, FIELD=TEMPERATURE, PARAMETERS=FIELD',
+                           '\t\t10.0, 10.0, , , , ,0.05,',
+                           '\t*RESTART, WRITE, FREQ=1000',
+                           '\t*OUTPUT, FIELD, FREQ=' + str(output_frequency),
+                           '\t\t*ELEMENT OUTPUT',
+                           '\t\t\tSDV1,SDV2,SDV21,SDV34,SDV47,SDV60,SDV73,SDV86,SDV99,HFL',
+                           '\t*OUTPUT, FIELD, FREQ=' + str(output_frequency),
+                           '\t\t*NODE OUTPUT',
+                           '\t\t\tNT',
+                           '\t\t*EL FILE, FREQUENCY=0',
+                           '\t\t*NODE FILE, FREQUENCY=1',
+                           '\t\t\tNT',
+                           '\t\t*EL PRINT, FREQ=0',
+                           '\t\t*NODE PRINT, FREQ=0',
+                           '*END STEP',
+                           '**'])
+        return file_lines
+
+    def _mechanical_step_data(self, step_name, step_time, kinematic_mode, output_frequency=5,
+                              max_increment=1000., step_amp='STEP'):
+        return ['*STEP, NAME=' + step_name + ', inc=10000, AMP=' + step_amp,
+                '\t*STATIC',
+                '\t\t0.01,  ' + str(step_time) + ', 1e-05,  ' + str(max_increment),
+                '\t*FIELD, OP=NEW, VAR=' + str(self.kinematic_mode_var),
+                '\t\tAll_Nodes,  ' + str(kinematic_mode),
+                '\t*TEMPERATURE, FILE=Toolbox_Thermal_' + self.name + '.odb, BSTEP = ' +
+                str(self._thermal_step_counter) + ', ESTEP = ' + str(self._thermal_step_counter),
+                '\t*CONTROLS, PARAMETERS=LINE SEARCH',
+                '\t\t 6,',
+                '\t*CONTROLS, PARAMETERS=TIME INCREMENTATION',
+                '\t\t20, 30, 9, 16, 10, 4, 12, 20, 6, 3, 50, 50, 6',
+                '\t*CONTROLS, FIELD=DISPLACEMENT, PARAMETERS=FIELD',
+                '\t\t0.05, 0.05',
+                '\t*RESTART, WRITE, FREQ=1000',
+                '\t*MONITOR, NODE=MONITOR_NODE, DOF=1, FREQ=1',
+                '\t*OUTPUT, FIELD, FREQ=' + str(output_frequency),
+                '\t\t*ELEMENT OUTPUT, directions=YES',
+                '\t\t\tS, E',
+                '\t*OUTPUT, FIELD, FREQ=' + str(output_frequency),
+                '\t\t*ELEMENT OUTPUT',
+                '\t\t\tSDV1,SDV2,SDV5,SDV21,SDV34,SDV47,SDV60,SDV73,SDV86,SDV99',
+                '\t*OUTPUT, FIELD, FREQ=' + str(output_frequency),
+                '\t\t*NODE OUTPUT',
+                '\t\t\tNT,U',
+                '*END STEP',
+                '**']
+
+    def add_step_data(self, step_name, step_time, surface_temperature, interaction_property,
+                      kinematic_mode, thermal_output_frequency=1, mechanical_output_frequency=10, add_carbon=False):
+        self._thermal_file_lines += self._thermal_step_data(step_name=step_name,
+                                                            step_time=step_time,
+                                                            surface_temperature=surface_temperature,
+                                                            interaction_property=interaction_property,
+                                                            kinematic_mode=kinematic_mode,
+                                                            output_frequency=thermal_output_frequency,
+                                                            add_carbon=add_carbon)
+
+        self._mechanical_file_lines += self._mechanical_step_data(step_name=step_name,
+                                                                  step_time=step_time,
+                                                                  kinematic_mode=kinematic_mode,
+                                                                  output_frequency=mechanical_output_frequency)
+        self._thermal_step_counter += 1
+
+    def _add_add_carbon_step(self):
+        step_name = 'Add carbon'
+        step_lines = self._mechanical_step_data(step_name=step_name,
+                                                step_time=1.0,
+                                                kinematic_mode=-8,
+                                                output_frequency=10, step_amp='RAMP')
+
+        step_lines.insert(6, '\t*FIELD, VAR=' + str(self.carbon_field_var) + ',  INPUT=Toolbox_Carbon_'
+                          + self.name + '.nod')
+        step_lines.pop(5)
+        self._mechanical_file_lines += step_lines
+
+    def create_cooling_file(self):
+        file_lines = ['**',
+                      '**',
+                      '** Autogenerated input file created by Case Hardening Simulation Toolbox, version 0.8.1',
+                      '** Written by Niklas Melin and Erik Olsson',
+                      '**',
+                      '*Heading',
+                      '\t Case Hardening Simulation Toolbox - Mechanical - Niklas Melin 2012',
+                      '*Preprint, echo=NO, model=NO, history=NO, contact=NO',
+                      '**',
+                      '** ----------------------------------------------------------------',
+                      '** Load required include files',
+                      '**',
+                      '**   Load geometry',
+                      '*INCLUDE, INPUT = ' + str(self._include_file_directory / ('Toolbox_Mechanical_'
+                                                 + self._include_file_name + '_geo.inc')),
+                      '** Load geometry set definitions',
+                      '*INCLUDE, INPUT = ' + str(self._include_file_directory
+                                                 / (self._include_file_name + '_sets.inc')),
+                      '**',
+                      '**',
+                      '*INCLUDE, INPUT = ' + str(self._include_file_directory / (self._include_file_name + '_BC.inc')),
+                      '** ----------------------------------------------------------------',
+                      '**',
+                      '**   Define material properties',
+                      '**',
+                      '*Solid Section, elset=All_Elements, material=' + self.material,
+                      '\t1.0',
+                      '*Hourglass Stiffness',
+                      '\t225.0, 0.0, 0.0',
+                      '**',
+                      '** DEFINE MATERIAL PROPERTIES',
+                      '**',
+                      '*Material, name=' + self.material,
+                      '\t*Density',
+                      '\t\t7.83e-06',
+                      '\t*Depvar',
+                      '\t\t' + str(len(heat_sim_fields))]
+
+        for i, heat_sim_field in enumerate(heat_sim_fields):
+            file_lines.append('\t\t' + str(i+1) + ', ' + heat_sim_field + ', ')
+
+        file_lines.append('*Elastic')
+        with open(self.dante_user_material_library / 'USR' / self.material / (self.material + '.MEC')) as mech_file:
+            mech_lines = mech_file.readlines()
+            for i, line in enumerate(mech_lines):
+                mech_lines[i] = line[:line.find('line ')]
+            if self.dante_version == 4.:
+                E_coeff = [float(val) for val in mech_lines[56].split(', ')]
+                v_coeff = [float(val) for val in mech_lines[59].split(', ')]
+            else:
+                E_coeff = [float(val) for val in mech_lines[52].split(', ')]
+                v_coeff = [float(val) for val in mech_lines[55].split(', ')]
+
+        for t in [-50 + i*10 for i in range(30)]:
+            E = E_coeff[0] + E_coeff[1]*t + E_coeff[2]*t**2 + E_coeff[3]*t**3
+            v = v_coeff[0] + v_coeff[1]*t
+            file_lines.append('\t\t' + str(E) + ', ' + str(v) + ', ' + str(t))
+
+        file_lines.append('\t*Expansion, user')
+        file_lines.append('*Initial conditions, type=temperature')
+        file_lines.append('\tALL_NODES , ' + str(self.final_dante_temperature))
+        file_lines.append('*Initial Conditions, type=Solution, user')
+        file_lines.append('*Initial Conditions, type=Stress, user')
+        file_lines.append('*Amplitude, name=temp_amp')
+        file_lines.append('\t0.0, ' + str(self.final_dante_temperature) + ', \t' + str(3600.) + ', '
+                          + str(self.final_temperature))
+        file_lines.append('*step, name=cooling, inc=10000, amp=ramp')
+        file_lines.append('\tCooling step')
+        file_lines.append('\t*Static')
+        file_lines.append('\t\t0.01,  ' + str(3600.) + ', 1e-09,  1000.')
+        file_lines.append('\t*TEMPERATURE, amplitude=temp_amp')
+        file_lines.append('\t\tall_nodes, 1.')
+        file_lines.append('\t*CONTROLS, PARAMETERS=LINE SEARCH')
+        file_lines.append('\t\t 6,')
+        file_lines.append('\t*CONTROLS, PARAMETERS=TIME INCREMENTATION')
+        file_lines.append('\t\t20, 30')
+        file_lines.append('\t*CONTROLS, FIELD=DISPLACEMENT, PARAMETERS=FIELD')
+        file_lines.append('\t\t0.05, 0.05')
+        file_lines.append('\t*RESTART, WRITE, FREQ=1000')
+        file_lines.append('\t*MONITOR, NODE=MONITOR_NODE, DOF=1, FREQ=1')
+        file_lines.append('\t*OUTPUT, FIELD, FREQ=1')
+        file_lines.append('\t\t*ELEMENT OUTPUT, directions=YES')
+        file_lines.append('\t\t\tS, E')
+        file_lines.append('\t*OUTPUT, FIELD, FREQ=1')
+        file_lines.append('\t\t*ELEMENT OUTPUT')
+        file_lines.append('\t\t\tSDV')
+        file_lines.append('\t*OUTPUT, FIELD, FREQ=1')
+        file_lines.append('\t\t*NODE OUTPUT')
+        file_lines.append('\t\t\tNT,U')
+        file_lines.append('*END STEP')
+        file_lines.append('**')
+
+        return file_lines
+
+    def _write_carbon_transfer_file(self):
+        carbon_transfer_file = self.dante_user_material_library / "USR" / self.material / (self.material + '.CTR')
+        if not carbon_transfer_file.is_file():
+            raise ValueError("The mass transfer boundary condition cannot be used with material", self.material,
+                             "as no CTR file is implemented for the material")
+        with open(carbon_transfer_file, 'r') as ctr_file:
+            lines = ctr_file.readlines()
+            for line in lines:
+                if not line.startswith('**'):
+                    carbon_transfer_parameters = [float(val) for val in line.split(',')]
+        file_lines = ['*carbon_transfer_parameters',
+                      '\t{0}, {1}, {2}, {3}'.format(*carbon_transfer_parameters),
+                      '*carbon_potential']
+        for data_line in self.carbon_potential:
+            file_lines.append('\t{0}, {1}, {2}'.format(*data_line))
+
+        with open(self.simulation_directory / ('Toolbox_Carbon_' + self.name + '.car'), 'w') as carbon_transfer_file:
+            for line in file_lines:
+                carbon_transfer_file.write(line + '\n')
+
+    def write_files(self, cpus):
+        if not self._include_file_directory.is_dir():
+            self._include_file_directory.mkdir(parents=True, exist_ok=True)
+        self.write_geometry_files_for_dante()
+        shutil.copy(self.boundary_condition_file, self._include_file_directory / (self.name + '_BC.inc'))
+        self._carbon_file_lines = self._init_carbon_file_lines()
+        self._thermal_file_lines = self._init_thermal_lines()
+        self._mechanical_file_lines = self._init_mechanical_lines()
+
+        if self.write_diffusion_file:
+            composition = read_composition_file(self.dante_user_material_library / "USR" / self.material
+                                                / (self.material + '.COM'))
+            write_diffusion_file(self.diffusion_file, composition)
+
+        # finding the exposed surface sides
+        exposed_surface_sides = []
+        with open(self._include_file_directory / (self._include_file_name + '_sets.inc')) as set_file:
+            for set_line in set_file.readlines():
+                set_line = set_line.lower().rstrip()
+                if set_line.startswith('*elset, elset=exposed_elements_'):
+                    exposed_surface_sides.append(int(set_line.replace('*elset, elset=exposed_elements_', '')))
+        exposed_surface_sides.sort()
+
+        if self.dante_version == 4:
+            self._thermal_file_lines += self._add_inital_conditions_for_dante_4()
+            self._mechanical_file_lines += self._add_inital_conditions_for_dante_4()
+
+        # Add the carburization step
+        step_name = 'Carburization'
+        carburization_time = min(self.carbon_potential[-1, 0], self.carburization_temperature[-1, 0])
+        self._write_carburization_step(step_name, self._total_time, self._total_time + carburization_time,
+                                       exposed_surface_sides)
+        self._total_time += carburization_time
+
+        if self.carburization_bc == "mass_transfer":
+            self._write_carbon_transfer_file()
+
+        # Add the add carbon step to the mechanical input file
+        self._add_add_carbon_step()
+
+        # Add the different cooling steps to the thermal and mechanical input files
+        for cooling_step in self.cooling_data:
+            self.add_step_data(cooling_step.step_name, cooling_step.time, cooling_step.temperature,
+                               cooling_step.interaction_property, kinematic_mode=-8,
+                               add_carbon=cooling_step == self.cooling_data[0])
+
+        if self.tempering_data:
+            for i, tempering_step in enumerate(self.tempering_data, 1):
+                if len(self.tempering_data) == 1:
+                    step_name = "tempering"
+                else:
+                    step_name = "tempering_{step_inc}".format(step_inc=i)
+                self.add_step_data(step_name, tempering_step.time, tempering_step.temperature,
+                                   tempering_step.interaction_property, kinematic_mode=self.tempering_kinematic_mode)
+
+        files = {'Carbon': self._carbon_file_lines,
+                 'Thermal': self._thermal_file_lines,
+                 'Mechanical': self._mechanical_file_lines}
+        if self.run_cooling_simulation:
+            files['Cooling'] = self.create_cooling_file()
+
+        for name, lines in files.items():
+            with open(self.simulation_directory / ('Toolbox_' + name + '_' + self.name + '.inp'), 'w+') as inp_file:
+                for line in lines:
+                    inp_file.write(line + '\n')
+                inp_file.write('**EOF')
+
+        self._write_env_file()
+        self._write_run_file(cpus)
+
+    def _write_env_file(self):
+        file_lines = ['# Settings for dante',
+                      'usub_lib_dir=\'' + str(self.dante_file.parents[0]) + '\'',
+                      '',
+                      'ask_delete = OFF'
+                      '# MPI Configuration',
+                      'mp_mode = MPI']
+
+        with open(self.simulation_directory / 'abaqus_v6.env', 'w') as env_file, \
+             open(package_directory / "case_hardening_toolbox" / 'abaqus_v6.env', 'r') as template_file:
+            env_file.writelines(template_file.readlines())
+            for line in file_lines:
+                env_file.write(line + '\n')
+
+    def _write_run_file(self, cpus):
+        file_lines = ['#!/bin/bash']
+        if self.material.startswith("U"):
+            material_directory = self.dante_user_material_library
+        else:
+            material_directory = self.dante_standard_material_library
+        file_lines.extend(['abq=' + self.abaqus_path,
+                           'dante=' + str(self.dante_file),
+                           'export DANTE_PATH=\'' + str(material_directory) + '\'',
+                           '',
+                           'sim_name=' + self.name,
+                           'carbon_exp_script=' + str(package_directory / 'case_hardening_toolbox'
+                                                      / 'carbon_field_export.py'),
+                           'data_exp_script=' + str(package_directory / 'case_hardening_toolbox'
+                                                    / 'write_heat_treatment_results.py')])
+        if self.carburization_bc == "carbon_potential":
+            file_lines.append('${abq} j=Toolbox_Carbon_${sim_name} cpus=' + str(cpus) + ' interactive')
+        else:
+            file_lines.append('${abq} j=Toolbox_Carbon_${sim_name} cpus=' + str(cpus) + ' interactive '
+                              'user=' + str(package_directory / 'user_subroutines/carburization_subroutine.o'))
+        file_lines.extend(['${abq} python ${carbon_exp_script} odb_file_name=Toolbox_Carbon_${sim_name}.odb '
+                           'carbon_file_name=Toolbox_Carbon_${sim_name}.nod',
+                           '${abq} j=Toolbox_Thermal_${sim_name} cpus=' + str(cpus) +
+                           ' interactive user=${dante}',
+                           '${abq} j=Toolbox_Mechanical_${sim_name} cpus=' + str(cpus) +
+                           ' interactive user=${dante}'])
+
+        if self.run_cooling_simulation:
+            file_lines.append(python + ' ${data_exp_script} Mechanical_${sim_name}')
+            file_lines.append('${abq} j=Toolbox_Cooling_${sim_name} cpus=' + str(cpus) + ' interactive '
+                              'user=' + str(package_directory / 'user_subroutines/cooling_subroutine.o'))
+
+        with open(self.simulation_directory / 'run_heat_treatment_sim.sh', 'w') as shell_file:
+            for line in file_lines:
+                shell_file.write(line + '\n')
+
+    def _write_dctrl_file(self):
+        file_lines = ['## line1: ADVANCED DANTE CONTROL FILE FOR LIMITING CHANGES OF',
+                      '## line2: TEMPERATURE, VOLUME FRACTION AND CARBON IN ONE INCREMENT',
+                      '## line3: THE FILE FORMAT IS NOT ALLOWED TO CHANGE',
+                      '## line4: maximum temperature change in one increment (default 30.0)',
+                      str(self.max_temp_inc),
+                      '## line6: maximum VF change in one increment (default: 0.20)',
+                      str(self.max_vf_inc),
+                      '## line8: maximum carbon change in one increment (default: 0.0005)',
+                      str(self.max_carb_inc),
+                      '## line10: end of file']
+
+        with open('DCTRL.CTL', 'w') as ctl_file:
+            for line in file_lines:
+                ctl_file.write(line + '\n')
+
+    def write_geometry_files_for_dante(self):
+        input_file_reader = InputFileReader()
+        input_file_reader.read_input_file(self.input_file)
+
+        node_sets = input_file_reader.set_data['nset'].keys()
+        element_sets = input_file_reader.set_data['elset'].keys()
+
+        # Check if necessary sets for dante simulations are defined
+        if 'exposed_nodes' not in node_sets:
+            raise ValueError('No node set exposed_nodes defined in the input file')
+        if 'exposed_elements' not in element_sets:
+            raise ValueError('No element set exposed_elements defined in the input file')
+
+        self.monitor_node = input_file_reader.set_data['nset'].get('monitor_node', None)
+        if len(self.monitor_node) == 1:
+            self.monitor_node = self.monitor_node[0]
+        else:
+            raise ValueError('The node set monitor node must contain exactly one node')
+
+        # Check if the needed node sets for boundary conditions are defined
+        with open(self.boundary_condition_file, 'r') as bc_file:
+            lines = bc_file.readlines()
+        lines = [line.lower() for line in lines]
+        reading_bc = False
+        bc_sets = set()
+        for line in lines:
+            if reading_bc:
+                bc_sets.add(line.split(',')[0])
+            elif line.startswith('*boundary'):
+                reading_bc = True
+            elif line.startswith('*') and not line.startswith('**'):
+                reading_bc = False
+        if not self._include_file_directory.is_dir():
+            self._include_file_directory.makedir(parents=True)
+
+        input_file_reader.write_geom_include_file(self._include_file_directory / ('Toolbox_Carbon_' +
+                                                  self._include_file_name + '_geo.inc'), simulation_type='Carbon')
+
+        input_file_reader.write_geom_include_file(self._include_file_directory / ('Toolbox_Thermal_' +
+                                                  self._include_file_name + '_geo.inc'), simulation_type='Thermal')
+
+        input_file_reader.write_geom_include_file(self._include_file_directory / ('Toolbox_Mechanical_' +
+                                                  self._include_file_name + '_geo.inc'), simulation_type='Mechanical')
+
+        surfaces = [('EXPOSED_SURFACE', 'EXPOSED_ELEMENTS')]
+        input_file_reader.write_sets_file(self._include_file_directory / (self._include_file_name + '_sets.inc'),
+                                          surfaces_from_element_sets=surfaces)

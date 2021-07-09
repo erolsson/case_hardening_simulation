@@ -1,0 +1,9 @@
+** This file contains material data for carbon transfer used in the carbon transfer subroutine
+** The model used calculates the flux as beta*(carbon_pot - surface_carbon)
+** where beta is a surface carbon and temperature dependent coefficient according to
+**      beta = a1 + a2*temperature + (b1 + b2*temperature)*surface_carbon
+** and the parameters below is given as
+**      a1, a2, b1, b2
+** The data is taken from
+**  "Calculation of Gas Carburizing Kinetics  from Carbon Concentration Profiles based on Direct Flux Integration"
+    7.92495017e-4, -5.71597261e-7, -1.65313382e-3, 1.64091658e-6

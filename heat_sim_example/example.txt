@@ -1,0 +1,56 @@
+** This is how comments are written
+
+** Name of the simulation, all abaqus simulations will be named
+** Toolbox_Carbon_name, Toolbox_Thermal_name etc.
+*simulation_name, name=example
+
+** The abaqus input file containing all nodes, elements and sets needed for heat treatment simulations
+*model_file, filename=~/heat_fat/heat_sim_example/model_files/simple_geometry.inp
+
+** A file defining the boundary conditions using abaqus input syntax for
+** the mechanical part of the heat treatment simulations
+*bc_file, filename=~/heat_fat/heat_sim_example/model_files/bc_simple_geometry.inc
+
+** Directory where the simulation will be placed
+*simulation_directory, directory=~/heat_simulation_test/simulation_1/
+
+** Name of the Dante material, a list of available materials can be found by
+** 	case_hardening_simulation -l dante_materials [optionals: config_file, dante_material_path]
+*material, dante_material_name=U92506
+
+** A table with two columns  with heat treatment data on the form:
+**   time point (minutes), carbon potential (%wt)
+** The first time point has to be zero and thus sets the initial conditions
+*carbon_potential, boundary_condition=mass_transfer
+	0,	   0.6
+	120.,  0.6
+	121.,  1.2
+	300.,  1.2
+	301.,  0.7
+	436.,  0.7
+
+** A table with two columns  with heat treatment data on the form:
+**   time point (minutes), carburization temperature (%wt)
+** The first time point has to be zero and thus sets the initial conditions
+*carburization_temperature
+    0.,      940.
+    345.,    940.
+    346.,    850.
+    436.,    850.
+
+** A table with four columns defining the cooling process:
+**   step name, time (minutes), temperature (C) and the
+** name of the interaction property controlling the heat transfer to the component
+** A list of implemented cooling media can be found by running
+**   case_hardening_simulation -l interaction_property
+*Cooling
+	Transfer,	1.,	840,	HOT_AIR
+	Quenching,	10.,	120,	QUENCHWAY_125B_Used_0mps
+	Cooldown,	60.,	70,	COOL_AIR
+
+** A table with four columns defining the tempering data:
+**   step_name, time (minutes), temperature (C), and the interaction_property
+*Tempering
+	tempering, 120,	180., COOL_AIR
+
+*final_temperature, temperature=20.
