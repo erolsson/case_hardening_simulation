@@ -1,6 +1,6 @@
 import pathlib
 
-from utilities.config import package_directory
+from src.utilities.config import package_directory
 
 
 def list_interaction_properties():

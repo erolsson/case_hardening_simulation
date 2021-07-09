@@ -5,7 +5,7 @@ import numpy as np
 
 from abaqus_python.abaqus_interface import ABQInterface
 
-from utilities.config import abq
+from src.utilities.config import abq
 from common import heat_sim_fields
 
 abq_interface = ABQInterface(abq)

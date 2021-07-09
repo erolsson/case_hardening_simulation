@@ -12,7 +12,8 @@ setup(name="case_hardening_simulations",
       install_requires=["numpy", "abaqus_python", "input_file_reader"],
       author="Erik Olsson",
       author_email="erolsson@kth.se",
+      packages=["case_hardening_toolbox", "utilities"],
       include_package_data=True,
       entry_points={"console_scripts":
-                          ["case_hardening_simulation=case_hardening_simulations.case_hardening_toolbox.__main__:main"]}
+                    ["case_hardening_simulation=case_hardening_simulations.case_hardening_toolbox.__main__:main"]}
       )
