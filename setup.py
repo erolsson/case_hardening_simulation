@@ -15,5 +15,5 @@ setup(name="case_hardening_simulations",
       packages=["case_hardening_toolbox"],
       include_package_data=True,
       entry_points={"console_scripts":
-                    ["case_hardening_simulation=case_hardening_simulations.case_hardening_toolbox.__main__:main"]}
+                    ["case_hardening_simulation=case_hardening_toolbox.__main__:main"]}
       )
