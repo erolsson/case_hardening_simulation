@@ -1,9 +1,9 @@
 import argparse
 import pathlib
 
-from src.case_hardening_toolbox.create_heat_treatment_simulation import HeatTreatmentFileReadingError
-from src.case_hardening_toolbox.create_heat_treatment_simulation import create_heat_treatment_simulation
-from src.utilities.display_functions import list_interaction_properties
+from case_hardening_toolbox.create_heat_treatment_simulation import HeatTreatmentFileReadingError
+from case_hardening_toolbox.create_heat_treatment_simulation import create_heat_treatment_simulation
+from case_hardening_toolbox.utilities.display_functions import list_interaction_properties
 
 
 def main():

@@ -2,11 +2,11 @@ from __future__ import print_function
 
 import shutil
 
-from src.utilities.config import package_directory, abq, dante_umat, dante_material_library, python
+from case_hardening_toolbox.utilities import package_directory, abq, dante_umat, dante_material_library, python
 
-from src.case_hardening_toolbox.diffusivity import write_diffusion_file, read_composition_file
+from case_hardening_toolbox.diffusivity import write_diffusion_file, read_composition_file
 from input_file_reader.input_file_reader import InputFileReader
-from src.case_hardening_toolbox.common import heat_sim_fields
+from case_hardening_toolbox.common import heat_sim_fields
 
 
 # noinspection PyInterpreter

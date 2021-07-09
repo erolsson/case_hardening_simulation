@@ -1,6 +1,6 @@
 import pathlib
 
-from src.utilities.config import package_directory
+from case_hardening_toolbox.utilities.config import package_directory
 
 
 def list_interaction_properties():
