@@ -4,8 +4,8 @@ import re
 import subprocess
 
 import numpy as np
-from case_hardening_toolbox.utilities.display_functions import list_interaction_properties
-from case_hardening_toolbox.case_hardening_toolbox import CaseHardeningToolbox
+from case_hardening_simulation.display_functions import list_interaction_properties
+from case_hardening_simulation.case_hardening_toolbox import CaseHardeningToolbox
 
 
 class HeatTreatmentFileReadingError(ValueError):

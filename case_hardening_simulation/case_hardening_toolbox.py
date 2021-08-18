@@ -2,11 +2,12 @@ from __future__ import print_function
 
 import shutil
 
-from case_hardening_toolbox.utilities import package_directory, abq, dante_umat, dante_material_library, python
+from case_hardening_simulation.common import package_directory
+from case_hardening_simulation.config import abq, dante_umat, dante_material_library, python
 
-from case_hardening_toolbox.diffusivity import write_diffusion_file, read_composition_file
+from case_hardening_simulation.diffusivity import write_diffusion_file, read_composition_file
 from input_file_reader.input_file_reader import InputFileReader
-from case_hardening_toolbox.common import heat_sim_fields
+from case_hardening_simulation.common import heat_sim_fields
 
 
 # noinspection PyInterpreter
@@ -25,7 +26,7 @@ class CaseHardeningToolbox:
 
         self.material = heat_simulation_parameters.material
         self.boundary_condition_file = heat_simulation_parameters.bc_filename
-        self.interaction_property_directory = package_directory / "case_hardening_toolbox" / "interaction_properties"
+        self.interaction_property_directory = package_directory / "case_hardening_simulation" / "interaction_properties"
 
         if config_filename is None:
             config_filename = package_directory / "heat_sim_config.cfg"
@@ -713,7 +714,7 @@ class CaseHardeningToolbox:
                       'mp_mode = MPI']
 
         with open(self.simulation_directory / 'abaqus_v6.env', 'w') as env_file, \
-             open(package_directory / "case_hardening_toolbox" / 'abaqus_v6.env', 'r') as template_file:
+             open(package_directory / "case_hardening_simulation" / 'abaqus_v6.env', 'r') as template_file:
             env_file.writelines(template_file.readlines())
             for line in file_lines:
                 env_file.write(line + '\n')
@@ -729,9 +730,9 @@ class CaseHardeningToolbox:
                            'export DANTE_PATH=\'' + str(material_directory) + '\'',
                            '',
                            'sim_name=' + self.name,
-                           'carbon_exp_script=' + str(package_directory / 'case_hardening_toolbox'
+                           'carbon_exp_script=' + str(package_directory / 'case_hardening_simulation'
                                                       / 'carbon_field_export.py'),
-                           'data_exp_script=' + str(package_directory / 'case_hardening_toolbox'
+                           'data_exp_script=' + str(package_directory / 'case_hardening_simulation'
                                                     / 'write_heat_treatment_results.py')])
         if self.carburization_bc == "carbon_potential":
             file_lines.append('${abq} j=Toolbox_Carbon_${sim_name} cpus=' + str(cpus) + ' interactive')
