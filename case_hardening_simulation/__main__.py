@@ -21,6 +21,8 @@ def main():
     parser.add_argument("-l", type=str, help="List various parameters")
     parser.add_argument("-r", type=str, help="Creates and runs the simulation", nargs="?")
     parser.add_argument("--cpus", type=int, help="Number of cpu cores used for the simulations")
+    parser.add_argument("--config_file", type=argparse_check_path, help="Path to a config file defining how"
+                                                                        "heat treatment simulations are run")
     args = parser.parse_args()
 
     heat_treatment_file = args.heat_treatment_file

@@ -88,6 +88,7 @@ class HeatTreatmentData:
         self.include_file_name = read_optional_parameter("include_file_name", "name", self.name)
         self.material = read_keyword_parameter("material", "dante_material_name")
         self.initial_carbon = read_optional_parameter("initial_carbon", "carbon", None)
+
         # Processing the carburization data
         carbon_potential = read_keyword_data("carbon_potential")
         self.carbon_potential = np.zeros((len(carbon_potential), 2))
