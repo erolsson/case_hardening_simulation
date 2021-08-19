@@ -1,6 +1,8 @@
+import glob
 import os
 import pathlib
 import re
+import shutil
 import subprocess
 
 import numpy as np
@@ -69,10 +71,10 @@ class HeatTreatmentData:
             except ValueError:
                 return default
 
-        self.simulation_directory = pathlib.Path(read_keyword_parameter("simulation_directory",
-                                                                        "directory")).expanduser()
-        if str(self.simulation_directory).startswith("~"):
-            self.simulation_directory = self.simulation_directory.expanduser()
+        self.simulation_directory = pathlib.Path(read_keyword_parameter("simulation_directory", "directory"))
+        odb_directory = read_optional_parameter("odb_directory", "directory", self.simulation_directory)
+        self.odb_directory = pathlib.Path(odb_directory).expanduser()
+        self.simulation_directory = self.simulation_directory.expanduser()
         self.input_filename = pathlib.Path(read_keyword_parameter("model_file", "filename")).expanduser()
         if not self.input_filename.is_file():
             raise ValueError("The specified input file ", self.input_filename, "does not exist!")
@@ -127,7 +129,14 @@ def parse_heat_simulation_file(heat_treatment_filename):
         :param heat_treatment_filename  A path to a heat treatment file
     """
 
-    required_keywords = ["model_file", "bc_file", "carburization_steps", "simulation_directory", "simulation_name"]
+    required_keywords = [
+        "model_file",
+        "bc_file",
+        "carburization_temperature",
+        "carbon_potential",
+        "simulation_directory",
+        "simulation_name"]
+
     keywords = {}
     keyword = None
 
@@ -167,18 +176,19 @@ def parse_heat_simulation_file(heat_treatment_filename):
     return keywords
 
 
-def create_heat_treatment_simulation(heat_treatment_filename, cpus, run):
+def create_heat_treatment_simulation(heat_treatment_filename, cpus, run, config_file=None):
     """
-
     :param heat_treatment_filename: path to the filename that defines the heat treatment simulation
     :param cpus:                    Number of cpus used for running the simulation
     :param run                      Bool setting if the simulation should be run or just written
+    :param config_file              path to the file configuring heat treatment simulations. If None, the package
+                                    config file is used
     :return:
     """
     parameters = HeatTreatmentData(heat_treatment_filename)
-    toolbox = CaseHardeningToolbox(parameters)
-
+    toolbox = CaseHardeningToolbox(parameters, config_filename=config_file)
     toolbox.write_files(cpus)
+
     if run:
         current_directory = os.getcwd()
         os.chdir(parameters.simulation_directory)
@@ -187,3 +197,11 @@ def create_heat_treatment_simulation(heat_treatment_filename, cpus, run):
         heat_sim_process = subprocess.Popen("./run_heat_treatment_sim.sh", cwd=os.getcwd(), shell=True)
         heat_sim_process.wait()
         os.chdir(current_directory)
+
+        if parameters.odb_directory != parameters.simulation_directory:
+            if not parameters.odb_directory.is_dir():
+                parameters.odb_directory.mkdir(parents=True)
+            odb_files = glob.glob(str(parameters.simulation_directory) + "/*.odb")
+            odb_files = [pathlib.Path(odb_file) for odb_file in odb_files]
+            for odb_file in odb_files:
+                shutil.move(odb_file, parameters.odb_directory / odb_file.name)

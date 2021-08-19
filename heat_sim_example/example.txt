@@ -5,14 +5,18 @@
 *simulation_name, name=example
 
 ** The abaqus input file containing all nodes, elements and sets needed for heat treatment simulations
-*model_file, filename=~/heat_fat/heat_sim_example/model_files/simple_geometry.inp
+*model_file, filename=~/case_hardening_simulation/heat_sim_example/model_files/simple_geometry.inp
 
 ** A file defining the boundary conditions using abaqus input syntax for
 ** the mechanical part of the heat treatment simulations
-*bc_file, filename=~/heat_fat/heat_sim_example/model_files/bc_simple_geometry.inc
+*bc_file, filename=~/case_hardening_simulation/heat_sim_example/model_files/bc_simple_geometry.inc
 
-** Directory where the simulation will be placed
+** Directory where the simulation will be done, should preferably be on a local disc
 *simulation_directory, directory=~/heat_simulation_test/simulation_1/
+
+** Directory where the odb files are moved after the simulation, if omitted, the simulation
+**   files stays in simulation_directory
+*odb_directory, directory=~/heat_simulation_test/results/
 
 ** Name of the Dante material, a list of available materials can be found by
 ** 	case_hardening_simulation -l dante_materials [optionals: config_file, dante_material_path]
@@ -44,13 +48,13 @@
 ** A list of implemented cooling media can be found by running
 **   case_hardening_simulation -l interaction_property
 *Cooling
-	Transfer,	1.,	840,	HOT_AIR
-	Quenching,	10.,	120,	QUENCHWAY_125B_Used_0mps
-	Cooldown,	60.,	70,	COOL_AIR
+	Transfer,	1.,	    840.,   	HOT_AIR
+	Quenching,	10.,	120.,	    QUENCHWAY_125B_Used_0mps
+	Cooldown,	60.,	70.,	    COOL_AIR
 
 ** A table with four columns defining the tempering data:
 **   step_name, time (minutes), temperature (C), and the interaction_property
 *Tempering
-	tempering, 120,	180., COOL_AIR
+	tempering, 120,	    180.,       COOL_AIR
 
 *final_temperature, temperature=20.

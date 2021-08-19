@@ -2,8 +2,7 @@ from __future__ import print_function
 
 import shutil
 
-from case_hardening_simulation.common import package_directory
-from case_hardening_simulation.config import abq, dante_umat, dante_material_library, python
+from case_hardening_simulation.config import get_config_data, package_directory
 
 from case_hardening_simulation.diffusivity import write_diffusion_file, read_composition_file
 from input_file_reader.input_file_reader import InputFileReader
@@ -26,21 +25,11 @@ class CaseHardeningToolbox:
 
         self.material = heat_simulation_parameters.material
         self.boundary_condition_file = heat_simulation_parameters.bc_filename
-        self.interaction_property_directory = package_directory / "case_hardening_simulation" / "interaction_properties"
+        self.interaction_property_directory = package_directory / "interaction_properties"
 
         if config_filename is None:
             config_filename = package_directory / "heat_sim_config.cfg"
-
-        config_data = {}
-        with open(config_filename, 'r') as config_file:
-            config_lines = config_file.readlines()
-            for line in config_lines:
-                try:
-                    keyword, data = line.split('=')
-                except ValueError:
-                    raise ValueError("config data must be on the form *keyword=data")
-                if keyword.startswith('*') and not keyword.startswith('**'):
-                    config_data[keyword[1:]] = data
+        self.config_data = get_config_data(config_filename)
 
         self._carbon_file_lines = None
         self._thermal_file_lines = None
@@ -49,11 +38,11 @@ class CaseHardeningToolbox:
         self._total_time = 0.
         self._thermal_step_counter = 1
 
-        self.dante_file = dante_umat
+        self.dante_file = self.config_data.dante_umat
         self.dante_version = int(self.dante_file.stem[5:6])
 
-        self.abaqus_path = abq
-        self.dante_standard_material_library = dante_material_library
+        self.abaqus_path = self.config_data.abq
+        self.dante_standard_material_library = self.config_data.dante_material_library
         self.dante_user_material_library = package_directory / "materials" / ("dante_" + str(self.dante_version))
 
         # This is settings for dante 3
@@ -629,7 +618,7 @@ class CaseHardeningToolbox:
                       '\t{0}, {1}, {2}, {3}'.format(*carbon_transfer_parameters),
                       '*carbon_potential']
         for data_line in self.carbon_potential:
-            file_lines.append('\t{0}, {1}, {2}'.format(*data_line))
+            file_lines.append('\t{0}, {1}'.format(*data_line))
 
         with open(self.simulation_directory / ('Toolbox_Carbon_' + self.name + '.car'), 'w') as carbon_transfer_file:
             for line in file_lines:
@@ -714,7 +703,7 @@ class CaseHardeningToolbox:
                       'mp_mode = MPI']
 
         with open(self.simulation_directory / 'abaqus_v6.env', 'w') as env_file, \
-             open(package_directory / "case_hardening_simulation" / 'abaqus_v6.env', 'r') as template_file:
+             open(package_directory / 'abaqus_v6.env', 'r') as template_file:
             env_file.writelines(template_file.readlines())
             for line in file_lines:
                 env_file.write(line + '\n')
@@ -747,7 +736,7 @@ class CaseHardeningToolbox:
                            ' interactive user=${dante}'])
 
         if self.run_cooling_simulation:
-            file_lines.append(python + ' ${data_exp_script} Mechanical_${sim_name}')
+            file_lines.append(self.config_data.python + ' ${data_exp_script} Mechanical_${sim_name}')
             file_lines.append('${abq} j=Toolbox_Cooling_${sim_name} cpus=' + str(cpus) + ' interactive '
                               'user=' + str(package_directory / 'user_subroutines/cooling_subroutine.o'))
 
@@ -815,6 +804,6 @@ class CaseHardeningToolbox:
         input_file_reader.write_geom_include_file(self._include_file_directory / ('Toolbox_Mechanical_' +
                                                   self._include_file_name + '_geo.inc'), simulation_type='Mechanical')
 
-        surfaces = [('EXPOSED_SURFACE', 'EXPOSED_ELEMENTS')]
+        surfaces = ['EXPOSED']
         input_file_reader.write_sets_file(self._include_file_directory / (self._include_file_name + '_sets.inc'),
                                           surfaces_from_element_sets=surfaces)

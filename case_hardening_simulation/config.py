@@ -1,7 +1,15 @@
 import pathlib
 import sys
 
-package_directory = pathlib.Path(__file__).parents[1].absolute()
+package_directory = pathlib.Path(__file__).parents[0].absolute()
+
+
+class Config:
+    def __init__(self, config_dict):
+        self.abq = config_dict["abaqus"]
+        self.dante_umat = pathlib.Path(config_dict["dante_umat"]).expanduser()
+        self.dante_material_library = pathlib.Path(config_dict["dante_material_library"]).expanduser()
+        self.python = sys.executable
 
 
 def get_config_data(config_filename=package_directory / 'heat_sim_config.cfg'):
@@ -15,18 +23,4 @@ def get_config_data(config_filename=package_directory / 'heat_sim_config.cfg'):
                 raise ValueError("config data must be on the form *keyword=data")
             if keyword.startswith('*') and not keyword.startswith('**'):
                 config_dict[keyword[1:]] = data.rstrip()
-    return config_dict
-
-
-config_data = get_config_data()
-abq = config_data["abaqus"]
-dante_umat = pathlib.Path(config_data["dante_umat"]).expanduser()
-dante_material_library = pathlib.Path(config_data["dante_material_library"]).expanduser()
-python = sys.executable
-
-if __name__ == '__main__':
-    print(package_directory)
-    print(abq)
-    print(dante_umat)
-    print(dante_material_library)
-    print(python)
+    return Config(config_dict)

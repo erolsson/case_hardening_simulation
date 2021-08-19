@@ -10,7 +10,7 @@ def main():
     def argparse_check_path(path):
         if "=" in path:
             path = path.split("=")[1]
-        path = pathlib.Path(path)
+        path = pathlib.Path(path).expanduser()
         if not path.is_file():
             raise argparse.ArgumentTypeError("{0} is not a valid path to a file".format(path))
         return path
@@ -19,9 +19,9 @@ def main():
     parser.add_argument("heat_treatment_file", type=argparse_check_path, nargs="?",
                         help="Path to the file defining the heat treatment simulation")
     parser.add_argument("-l", type=str, help="List various parameters")
-    parser.add_argument("-r", type=str, help="Creates and runs the simulation", nargs="?")
+    parser.add_argument("-r", help="Creates and runs the simulation", action='store_true')
     parser.add_argument("--cpus", type=int, help="Number of cpu cores used for the simulations")
-    parser.add_argument("--config_file", type=argparse_check_path, help="Path to a config file defining how"
+    parser.add_argument("--config_file", type=argparse_check_path, help="Path to a config file defining how "
                                                                         "heat treatment simulations are run")
     args = parser.parse_args()
 
@@ -31,10 +31,15 @@ def main():
         cpus = 1
     if heat_treatment_file:
         try:
-            run = not args.r
-            create_heat_treatment_simulation(heat_treatment_file, cpus, run)
+            print(args)
+            run = args.r is not None
+            create_heat_treatment_simulation(heat_treatment_file, cpus, run, args.config_file)
         except HeatTreatmentFileReadingError as e:
             print("Error in reading the heat treatment file")
+            print("\t", args.heat_treatment_file.absolute())
+            print(e)
+        except ValueError as e:
+            print("Error in the heat treatment file")
             print("\t", args.heat_treatment_file.absolute())
             print(e)
 
