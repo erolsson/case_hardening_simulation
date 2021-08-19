@@ -719,15 +719,13 @@ class CaseHardeningToolbox:
                            'export DANTE_PATH=\'' + str(material_directory) + '\'',
                            '',
                            'sim_name=' + self.name,
-                           'carbon_exp_script=' + str(package_directory / 'case_hardening_simulation'
-                                                      / 'carbon_field_export.py'),
-                           'data_exp_script=' + str(package_directory / 'case_hardening_simulation'
-                                                    / 'write_heat_treatment_results.py')])
+                           'carbon_exp_script=' + str(package_directory / 'carbon_field_export.py'),
+                           'data_exp_script=' + str(package_directory / 'write_heat_treatment_results.py')])
         if self.carburization_bc == "carbon_potential":
             file_lines.append('${abq} j=Toolbox_Carbon_${sim_name} cpus=' + str(cpus) + ' interactive')
         else:
             file_lines.append('${abq} j=Toolbox_Carbon_${sim_name} cpus=' + str(cpus) + ' interactive '
-                              'user=' + str(package_directory / 'user_subroutines/carburization_subroutine.o'))
+                              'user=' + str(package_directory / 'compiled_subroutines/carburization_subroutine.o'))
         file_lines.extend(['${abq} python ${carbon_exp_script} odb_file_name=Toolbox_Carbon_${sim_name}.odb '
                            'carbon_file_name=Toolbox_Carbon_${sim_name}.nod',
                            '${abq} j=Toolbox_Thermal_${sim_name} cpus=' + str(cpus) +
@@ -736,9 +734,10 @@ class CaseHardeningToolbox:
                            ' interactive user=${dante}'])
 
         if self.run_cooling_simulation:
-            file_lines.append(self.config_data.python + ' ${data_exp_script} Mechanical_${sim_name}')
+            file_lines.append(self.config_data.python + ' ${data_exp_script} Mechanical_${sim_name} '
+                              + self.abaqus_path)
             file_lines.append('${abq} j=Toolbox_Cooling_${sim_name} cpus=' + str(cpus) + ' interactive '
-                              'user=' + str(package_directory / 'user_subroutines/cooling_subroutine.o'))
+                              'user=' + str(package_directory / 'compiled_subroutines/cooling_subroutine.o'))
 
         with open(self.simulation_directory / 'run_heat_treatment_sim.sh', 'w') as shell_file:
             for line in file_lines:

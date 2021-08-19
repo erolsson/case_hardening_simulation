@@ -5,7 +5,8 @@ from setuptools import setup
 HERE = pathlib.Path(__file__).parent
 README = (HERE / "README.md").read_text()
 
-data_files = ["heat_sim_config.cfg"] + glob.glob("case_hardening_simulation/interaction_properties/*")
+data_files = ["heat_sim_config.cfg", "abaqus_v6.env"] + glob.glob("case_hardening_simulation/interaction_properties/*")
+data_files += glob.glob("case_hardening_simulation/compiled_subroutines/*.o")
 materials = glob.glob('case_hardening_simulation/materials/dante_3/USR/*')
 for material in materials:
     data_files.extend(glob.glob(material + "/*"))

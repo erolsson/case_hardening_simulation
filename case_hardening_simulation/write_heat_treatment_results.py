@@ -3,15 +3,13 @@ import sys
 
 import numpy as np
 
-from abaqus_python.abaqus_interface import ABQInterface
+from abaqus_python_interface.abaqus_interface import ABQInterface
 
-from case_hardening_simulation.utilities import abq
 from common import heat_sim_fields
 
-abq_interface = ABQInterface(abq)
 
-
-def write_stresses_to_file(sim_name, step):
+def write_stresses_to_file(sim_name, abq, step):
+    abq_interface = ABQInterface(abq)
     odb_file = pathlib.Path(sim_name + '.odb').absolute()
     stress, _, element_labels = abq_interface.read_data_from_odb('S', odb_file, step_name=step,
                                                                  get_position_numbers=True)
@@ -38,6 +36,11 @@ def write_stresses_to_file(sim_name, step):
     np.savetxt(sim_name + '.htd', data, fmt=fmt, delimiter=',')
 
 
+def main():
+    simulation_name = 'Toolbox_' + sys.argv[-2]
+    abq = sys.argv[-1]
+    write_stresses_to_file(simulation_name, abq, step=None)
+
+
 if __name__ == '__main__':
-    simulation_name = 'Toolbox_' + sys.argv[-1]
-    write_stresses_to_file(simulation_name, step=None)
+    main()
