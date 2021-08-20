@@ -104,7 +104,6 @@ class HeatTreatmentData:
         for i, c_data in enumerate(carburization_temperature):
             self.carburization_temperature[i] = [float(val) for val in c_data.rstrip().lstrip().split(',')]
         self.carburization_temperature[:, 0] *= 60  # Set time in seconds
-        self.carburization_temperature[:, 1] /= 100  # Set carbon in fraction, not wt%
 
         carburization_bcs = ["carbon_potential", "mass_transfer"]
         self.carburization_bc = read_optional_parameter("carburization_steps", "boundary_condition",
