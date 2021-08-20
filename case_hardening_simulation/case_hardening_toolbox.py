@@ -365,7 +365,7 @@ class CaseHardeningToolbox:
         self._thermal_file_lines.append('\t*CONTROLS, PARAMETERS = LINE SEARCH')
         self._thermal_file_lines.append('\t\t6,')
         self._thermal_file_lines.append('\t*CONTROLS, PARAMETERS = TIME INCREMENTATION')
-        self._thermal_file_lines.append('\t\t20, 30')
+        self._thermal_file_lines.append('\t\t20, 30, 9, 16, 10, 4, 12, 20')
         self._thermal_file_lines.append('\t*CONTROLS, FIELD = TEMPERATURE, PARAMETERS = FIELD')
         self._thermal_file_lines.append('\t\t0.05, 0.05')
         self._thermal_file_lines.append('\t*SFILM, OP = NEW, AMPLITUDE=TEMPERATURE')
@@ -397,7 +397,7 @@ class CaseHardeningToolbox:
         self._mechanical_file_lines.append('\t*CONTROLS, PARAMETERS = LINE  SEARCH')
         self._mechanical_file_lines.append('\t\t6,')
         self._mechanical_file_lines.append('\t*CONTROLS, PARAMETERS = TIME INCREMENTATION')
-        self._mechanical_file_lines.append('\t\t20, 30')
+        self._mechanical_file_lines.append('\t\t20, 30, 9, 16, 10, 4, 12, 20')
         self._mechanical_file_lines.append('\t*CONTROLS, FIELD = DISPLACEMENT, PARAMETERS = FIELD')
         self._mechanical_file_lines.append('\t\t0.05, 0.05')
         self._mechanical_file_lines.append('\t** Add output variables')
@@ -742,6 +742,7 @@ class CaseHardeningToolbox:
         with open(self.simulation_directory / 'run_heat_treatment_sim.sh', 'w') as shell_file:
             for line in file_lines:
                 shell_file.write(line + '\n')
+        self._write_dctrl_file()
 
     def _write_dctrl_file(self):
         file_lines = ['## line1: ADVANCED DANTE CONTROL FILE FOR LIMITING CHANGES OF',
@@ -755,7 +756,7 @@ class CaseHardeningToolbox:
                       str(self.max_carb_inc),
                       '## line10: end of file']
 
-        with open('DCTRL.CTL', 'w') as ctl_file:
+        with open(self.simulation_directory / 'DCTRL.CTL', 'w') as ctl_file:
             for line in file_lines:
                 ctl_file.write(line + '\n')
 

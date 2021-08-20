@@ -37,7 +37,8 @@
 **   time point (minutes), carburization temperature (%wt)
 ** The first time point has to be zero and thus sets the initial conditions
 *carburization_temperature
-    0.,      940.
+    0.,      20.
+    60.,     940.
     345.,    940.
     346.,    850.
     436.,    850.
