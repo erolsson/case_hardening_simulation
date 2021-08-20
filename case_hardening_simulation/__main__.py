@@ -31,9 +31,7 @@ def main():
         cpus = 1
     if heat_treatment_file:
         try:
-            print(args)
-            run = args.r is not None
-            create_heat_treatment_simulation(heat_treatment_file, cpus, run, args.config_file)
+            create_heat_treatment_simulation(heat_treatment_file, cpus, args.r, args.config_file)
         except HeatTreatmentFileReadingError as e:
             print("Error in reading the heat treatment file")
             print("\t", args.heat_treatment_file.absolute())
