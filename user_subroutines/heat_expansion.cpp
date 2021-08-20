@@ -149,12 +149,10 @@ public:
 extern "C" void uexpan_(double* expan, double* expandt, const double* temp, const double* time, const double* dtime,
                         const double* predef, const double* dpred, double* statev, const char* cmnae,
                         const int* nstatv, const int* noel) {
-    std::cout << "Starting expan_\n";
     if (phases.empty()) {
         std::string material_name = get_material_name(cmnae);
         assign_expansion_parameters(material_name);
     }
-    std::cout << "Phases set\n";
     auto state = State(statev);
     double dT = temp[1];
     double C = state.carbon();
