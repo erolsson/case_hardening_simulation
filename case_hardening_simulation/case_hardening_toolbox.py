@@ -709,6 +709,7 @@ class CaseHardeningToolbox:
                 env_file.write(line + '\n')
 
     def _write_run_file(self, cpus):
+        # ToDo: Add copying of odb files to odb_directory in the run-file
         file_lines = ['#!/bin/bash']
         if self.material.startswith("U"):
             material_directory = self.dante_user_material_library

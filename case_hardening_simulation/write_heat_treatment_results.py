@@ -32,6 +32,8 @@ def write_stresses_to_file(sim_name, abq, step):
         field = abq_interface.read_data_from_odb('SDV_' + field_var, odb_file, step_name=step)
         data[:, 2+stress.shape[1] + i] = field
 
+    idx = np.lexsort((data[:, 1], data[:, 0]))
+    data = data[idx, :]
     fmt = '%d, %d' + ', %f'*(data.shape[1] - 2)
     np.savetxt(sim_name + '.htd', data, fmt=fmt, delimiter=',')
 
