@@ -139,8 +139,8 @@ def parse_heat_simulation_file(heat_treatment_filename):
     keywords = {}
     keyword = None
 
-    with open(heat_treatment_filename) as hear_treatment_file:
-        file_lines = hear_treatment_file.readlines()
+    with open(heat_treatment_filename) as heat_treatment_file:
+        file_lines = heat_treatment_file.readlines()
         for i, line in enumerate(file_lines, 1):
             line = line.replace(' ', '').rstrip()
             if not line.startswith('**') and len(line):
@@ -150,7 +150,7 @@ def parse_heat_simulation_file(heat_treatment_filename):
                     keyword = words[0][1:].lower()
                     parameters = words[1:]
                     if keyword in keywords:
-                        raise HeatTreatmentFileReadingError("The keyword \n\t*{0}\n appears more than one tie in the "
+                        raise HeatTreatmentFileReadingError("The keyword \n\t*{0}\n appears more than one time in the "
                                                             "file {1}".format(keyword, heat_treatment_filename))
                     parameter_dict = {}
                     for parameter in parameters:
