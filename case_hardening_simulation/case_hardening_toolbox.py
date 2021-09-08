@@ -796,14 +796,20 @@ class CaseHardeningToolbox:
         if not self._include_file_directory.is_dir():
             self._include_file_directory.makedir(parents=True)
 
-        input_file_reader.write_geom_include_file(self._include_file_directory / ('Toolbox_Carbon_' +
-                                                  self._include_file_name + '_geo.inc'), simulation_type='Carbon')
+        input_file_reader.write_geom_include_file(
+            self._include_file_directory / ('Toolbox_Carbon_' + self._include_file_name + '_geo.inc'),
+            simulation_type='Carbon'
+        )
 
-        input_file_reader.write_geom_include_file(self._include_file_directory / ('Toolbox_Thermal_' +
-                                                  self._include_file_name + '_geo.inc'), simulation_type='Thermal')
+        input_file_reader.write_geom_include_file(
+            self._include_file_directory / ('Toolbox_Thermal_' + self._include_file_name + '_geo.inc'),
+            simulation_type='Thermal'
+        )
 
-        input_file_reader.write_geom_include_file(self._include_file_directory / ('Toolbox_Mechanical_' +
-                                                  self._include_file_name + '_geo.inc'), simulation_type='Mechanical')
+        input_file_reader.write_geom_include_file(
+            self._include_file_directory / ('Toolbox_Mechanical_' + self._include_file_name + '_geo.inc'),
+            simulation_type='Mechanical'
+        )
 
         surfaces = ['EXPOSED']
         input_file_reader.write_sets_file(self._include_file_directory / (self._include_file_name + '_sets.inc'),
