@@ -776,7 +776,7 @@ class CaseHardeningToolbox:
 
         self.monitor_node = input_file_reader.set_data['nset'].get('monitor_node', None)
         if len(self.monitor_node) == 1:
-            self.monitor_node = self.monitor_node[0]
+            self.monitor_node = next(iter(self.monitor_node))
         else:
             raise ValueError('The node set monitor node must contain exactly one node')
 
