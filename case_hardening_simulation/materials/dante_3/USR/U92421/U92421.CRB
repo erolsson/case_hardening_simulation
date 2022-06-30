@@ -1,0 +1,255 @@
+** Carbide model is not activated by setting the mobility to 0.0
+DEC2015        ! model implementation date : use UPPERCASE
+U92421           ! matnam must be UPPERCASE
+** Temperature points
+  8
+************ Temperature(C)  (1700F) ****************************
+  7.8800E+02
+** Lower Carbon Bound for Carbide Forming - EQC, and Unstable carbide Range - VCRANGE
+  0.010, 0.003D0
+** Maximum Carbide Amount Possible - VMAXCD 
+  0.023
+** Carbide Forming Kinetics: VMOBI1, VALPHA1, VBETA1   0.050, 0.50, 1.30  
+  0.00, 0.50, 1.30       
+** Carbide Decomposing Kinetics: VMOBI2, VALPHA2, VBETA2   0.050, 2.50, 0.50
+  0.00, 2.50, 0.50     
+** Carbide Size Growth and Shrinkage Rate: CBD_GRATE; CBD_SRATE
+  1.0E-4, 5.0E-5
+** Number of Carbon points for Diffusivity
+  14
+** Diffusivity Scale with Carbide Existance - VDF_SCALE
+  2.0D0
+**Diffusivity    Carbon  
+  1.52398E-06,    2.0000E-03
+  1.64519E-06,    2.5000E-03
+  1.77604E-06,    3.0000E-03
+  1.91730E-06,    3.5000E-03
+  2.06979E-06,    4.0000E-03
+  2.23442E-06,    4.5000E-03
+  2.41213E-06,    5.0000E-03
+  2.60398E-06,    5.5000E-03
+  2.81109E-06,    6.0000E-03
+  3.03467E-06,    6.5000E-03
+  3.27604E-06,    7.0000E-03
+  3.53660E-06,    7.5000E-03
+  3.81789E-06,    8.0000E-03
+  4.12155E-06,    8.5000E-03
+************ Temperature(C)  (  ) ****************************
+  8.4350E+02
+** Lower Carbon Bound for Carbide Forming - EQC, and Unstable carbide Range - VCRANGE
+  0.010, 0.003D0
+** Maximum Carbide Amount Possible - VMAXCD 
+  0.023
+** Carbide Forming Kinetics: VMOBI1, VALPHA1, VBETA1   0.050, 0.50, 1.30  
+  0.00, 0.50, 1.30       
+** Carbide Decomposing Kinetics: VMOBI2, VALPHA2, VBETA2   0.050, 2.50, 0.50
+  0.00, 2.50, 0.50     
+** Carbide Size Growth and Shrinkage Rate: CBD_GRATE; CBD_SRATE
+  1.0E-4, 5.0E-5
+** Number of Carbon points for Diffusivity
+  14
+** Diffusivity Scale with Carbide Existance - VDF_SCALE
+  2.0D0
+**Diffusivity    Carbon  
+  3.53465E-06,    2.0000E-03
+  3.78621E-06,    2.5000E-03
+  4.05566E-06,    3.0000E-03
+  4.34430E-06,    3.5000E-03
+  4.65348E-06,    4.0000E-03
+  4.98466E-06,    4.5000E-03
+  5.33941E-06,    5.0000E-03
+  5.71941E-06,    5.5000E-03
+  6.12645E-06,    6.0000E-03
+  6.56246E-06,    6.5000E-03
+  7.02950E-06,    7.0000E-03
+  7.52978E-06,    7.5000E-03
+  8.06566E-06,    8.0000E-03
+  8.63968E-06,    8.5000E-03
+************ Temperature(C)  (  ) ****************************
+  8.7130E+02
+** Lower Carbon Bound for Carbide Forming - EQC, and Unstable carbide Range - VCRANGE
+  0.010, 0.003D0
+** Maximum Carbide Amount Possible - VMAXCD 
+  0.023
+** Carbide Forming Kinetics: VMOBI1, VALPHA1, VBETA1   0.050, 0.50, 1.30  
+  0.00, 0.50, 1.30       
+** Carbide Decomposing Kinetics: VMOBI2, VALPHA2, VBETA2   0.050, 2.50, 0.50
+  0.00, 2.50, 0.50     
+** Carbide Size Growth and Shrinkage Rate: CBD_GRATE; CBD_SRATE
+  1.0E-4, 5.0E-5
+** Number of Carbon points for Diffusivity
+  14
+** Diffusivity Scale with Carbide Existance - VDF_SCALE
+  2.0D0
+**Diffusivity    Carbon  
+  5.22440E-06,    2.0000E-03
+  5.57603E-06,    2.5000E-03
+  5.95132E-06,    3.0000E-03
+  6.35187E-06,    3.5000E-03
+  6.77938E-06,    4.0000E-03
+  7.23567E-06,    4.5000E-03
+  7.72266E-06,    5.0000E-03
+  8.24243E-06,    5.5000E-03
+  8.79718E-06,    6.0000E-03
+  9.38927E-06,    6.5000E-03
+  1.00212E-05,    7.0000E-03
+  1.06957E-05,    7.5000E-03
+  1.14156E-05,    8.0000E-03
+  1.21839E-05,    8.5000E-03
+************ Temperature(C)  (  ) ****************************
+  9.0000E+02
+** Lower Carbon Bound for Carbide Forming - EQC, and Unstable carbide Range - VCRANGE
+  0.010, 0.003D0
+** Maximum Carbide Amount Possible - VMAXCD 
+  0.023
+** Carbide Forming Kinetics: VMOBI1, VALPHA1, VBETA1   0.050, 0.50, 1.30  
+  0.00, 0.50, 1.30       
+** Carbide Decomposing Kinetics: VMOBI2, VALPHA2, VBETA2   0.050, 2.50, 0.50
+  0.00, 2.50, 0.50     
+** Carbide Size Growth and Shrinkage Rate: CBD_GRATE; CBD_SRATE
+  1.0E-4, 5.0E-5
+** Number of Carbon points for Diffusivity
+  14
+** Diffusivity Scale with Carbide Existance - VDF_SCALE
+  2.0D0
+**Diffusivity    Carbon  
+  7.57025E-06,    2.0000E-03
+  8.05209E-06,    2.5000E-03
+  8.56460E-06,    3.0000E-03
+  9.10974E-06,    3.5000E-03
+  9.68957E-06,    4.0000E-03
+  1.03063E-05,    4.5000E-03
+  1.09623E-05,    5.0000E-03
+  1.16600E-05,    5.5000E-03
+  1.24022E-05,    6.0000E-03
+  1.31916E-05,    6.5000E-03
+  1.40312E-05,    7.0000E-03
+  1.49243E-05,    7.5000E-03
+  1.58743E-05,    8.0000E-03
+  1.68846E-05,    8.5000E-03
+************ Temperature(C)  (  ) ****************************
+  9.3000E+02
+** Lower Carbon Bound for Carbide Forming - EQC, and Unstable carbide Range - VCRANGE
+  0.010, 0.003D0
+** Maximum Carbide Amount Possible - VMAXCD 
+  0.023
+** Carbide Forming Kinetics: VMOBI1, VALPHA1, VBETA1   0.050, 0.50, 1.30  
+  0.00, 0.50, 1.30       
+** Carbide Decomposing Kinetics: VMOBI2, VALPHA2, VBETA2   0.050, 2.50, 0.50
+  0.00, 2.50, 0.50     
+** Carbide Size Growth and Shrinkage Rate: CBD_GRATE; CBD_SRATE
+  1.0E-4, 5.0E-5
+** Number of Carbon points for Diffusivity
+  14
+** Diffusivity Scale with Carbide Existance - VDF_SCALE
+  2.0D0
+**Diffusivity    Carbon  
+  1.12351E-05,    2.0000E-03
+  1.19066E-05,    2.5000E-03
+  1.26183E-05,    3.0000E-03
+  1.33726E-05,    3.5000E-03
+  1.41719E-05,    4.0000E-03
+  1.50190E-05,    4.5000E-03
+  1.59167E-05,    5.0000E-03
+  1.68681E-05,    5.5000E-03
+  1.78763E-05,    6.0000E-03
+  1.89449E-05,    6.5000E-03
+  2.00772E-05,    7.0000E-03
+  2.12773E-05,    7.5000E-03
+  2.25491E-05,    8.0000E-03
+  2.38969E-05,    8.5000E-03
+************ Temperature(C)  (  ) ****************************
+  9.6000E+02
+** Lower Carbon Bound for Carbide Forming - EQC, and Unstable carbide Range - VCRANGE
+  0.010, 0.003D0
+** Maximum Carbide Amount Possible - VMAXCD 
+  0.023
+** Carbide Forming Kinetics: VMOBI1, VALPHA1, VBETA1   0.050, 0.50, 1.30  
+  0.00, 0.50, 1.30       
+** Carbide Decomposing Kinetics: VMOBI2, VALPHA2, VBETA2   0.050, 2.50, 0.50
+  0.00, 2.50, 0.50     
+** Carbide Size Growth and Shrinkage Rate: CBD_GRATE; CBD_SRATE
+  1.0E-4, 5.0E-5
+** Number of Carbon points for Diffusivity
+  14
+** Diffusivity Scale with Carbide Existance - VDF_SCALE
+  2.0D0
+**Diffusivity    Carbon  
+  1.61549E-05,    2.0000E-03
+  1.70631E-05,    2.5000E-03
+  1.80223E-05,    3.0000E-03
+  1.90355E-05,    3.5000E-03
+  2.01057E-05,    4.0000E-03
+  2.12360E-05,    4.5000E-03
+  2.24299E-05,    5.0000E-03
+  2.36908E-05,    5.5000E-03
+  2.50227E-05,    6.0000E-03
+  2.64295E-05,    6.5000E-03
+  2.79153E-05,    7.0000E-03
+  2.94847E-05,    7.5000E-03
+  3.11423E-05,    8.0000E-03
+  3.28931E-05,    8.5000E-03
+************ Temperature(C)  (  ) ****************************
+  1.0000E+03
+** Lower Carbon Bound for Carbide Forming - EQC, and Unstable carbide Range - VCRANGE
+  0.010, 0.003D0
+** Maximum Carbide Amount Possible - VMAXCD 
+  0.023
+** Carbide Forming Kinetics: VMOBI1, VALPHA1, VBETA1   0.050, 0.50, 1.30  
+  0.00, 0.50, 1.30       
+** Carbide Decomposing Kinetics: VMOBI2, VALPHA2, VBETA2   0.050, 2.50, 0.50
+  0.00, 2.50, 0.50     
+** Carbide Size Growth and Shrinkage Rate: CBD_GRATE; CBD_SRATE
+  1.0E-4, 5.0E-5
+** Number of Carbon points for Diffusivity
+  14
+** Diffusivity Scale with Carbide Existance - VDF_SCALE
+  2.0D0
+**Diffusivity    Carbon  
+  2.55294E-05,    2.0000E-03
+  2.68507E-05,    2.5000E-03
+  2.82405E-05,    3.0000E-03
+  2.97022E-05,    3.5000E-03
+  3.12395E-05,    4.0000E-03
+  3.28564E-05,    4.5000E-03
+  3.45570E-05,    5.0000E-03
+  3.63456E-05,    5.5000E-03
+  3.82267E-05,    6.0000E-03
+  4.02053E-05,    6.5000E-03
+  4.22862E-05,    7.0000E-03
+  4.44749E-05,    7.5000E-03
+  4.67768E-05,    8.0000E-03
+  4.91979E-05,    8.5000E-03
+************ Temperature(C)  (  ) ****************************
+  1.1000E+03
+** Lower Carbon Bound for Carbide Forming - EQC, and Unstable carbide Range - VCRANGE
+  0.010, 0.003D0
+** Maximum Carbide Amount Possible - VMAXCD 
+  0.023
+** Carbide Forming Kinetics: VMOBI1, VALPHA1, VBETA1   0.050, 0.50, 1.30  
+  0.00, 0.50, 1.30       
+** Carbide Decomposing Kinetics: VMOBI2, VALPHA2, VBETA2   0.050, 2.50, 0.50
+  0.00, 2.50, 0.50     
+** Carbide Size Growth and Shrinkage Rate: CBD_GRATE; CBD_SRATE
+  1.0E-4, 5.0E-5
+** Number of Carbon points for Diffusivity
+  14
+** Diffusivity Scale with Carbide Existance - VDF_SCALE
+  2.0D0
+**Diffusivity    Carbon  
+  7.13219E-05,    2.0000E-03
+  7.43040E-05,    2.5000E-03
+  7.74107E-05,    3.0000E-03
+  8.06474E-05,    3.5000E-03
+  8.40194E-05,    4.0000E-03
+  8.75323E-05,    4.5000E-03
+  9.11922E-05,    5.0000E-03
+  9.50051E-05,    5.5000E-03
+  9.89774E-05,    6.0000E-03
+  1.03116E-04,    6.5000E-03
+  1.07427E-04,    7.0000E-03
+  1.11919E-04,    7.5000E-03
+  1.16598E-04,    8.0000E-03
+  1.21474E-04,    8.5000E-03
+****************** END OF FILE ******************
+
