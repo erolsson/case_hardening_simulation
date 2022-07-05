@@ -722,6 +722,7 @@ class CaseHardeningToolbox:
                            'sim_name=' + self.name,
                            'carbon_exp_script=' + str(package_directory / 'carbon_field_export.py'),
                            'data_exp_script=' + str(package_directory / 'write_heat_treatment_results.py')])
+
         if self.carburization_bc == "carbon_potential":
             file_lines.append('${abq} j=Toolbox_Carbon_${sim_name} cpus=' + str(cpus) + ' interactive')
         else:
