@@ -106,8 +106,8 @@ class HeatTreatmentData:
         self.carburization_temperature[:, 0] *= 60  # Set time in seconds
 
         carburization_bcs = ["carbon_potential", "mass_transfer"]
-        self.carburization_bc = read_optional_parameter("carburization_steps", "boundary_condition",
-                                                        carburization_bcs[1])
+        self.carburization_bc = read_optional_parameter("carbon_potential", "boundary_condition",
+                                                        carburization_bcs[0])
         if self.carburization_bc not in carburization_bcs:
             raise ValueError("The boundary condition parameter to carburization steps has to be either [" +
                              ", ".join(carburization_bcs) + "]")
