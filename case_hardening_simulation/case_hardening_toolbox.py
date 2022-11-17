@@ -776,10 +776,11 @@ class CaseHardeningToolbox:
             raise ValueError('No element set exposed_elements defined in the input file')
 
         self.monitor_node = input_file_reader.set_data['nset'].get('monitor_node', None)
-        if self.monitor_node and len(self.monitor_node) == 1:
-            self.monitor_node = next(iter(self.monitor_node))
-        else:
-            raise ValueError('The node set monitor node must contain exactly one node')
+        if self.monitor_node:
+            if len(self.monitor_node) == 1:
+                self.monitor_node = next(iter(self.monitor_node))
+            else:
+                raise ValueError('The node set monitor node must contain exactly one node')
 
         # Check if the needed node sets for boundary conditions are defined
         with open(self.boundary_condition_file, 'r') as bc_file:
