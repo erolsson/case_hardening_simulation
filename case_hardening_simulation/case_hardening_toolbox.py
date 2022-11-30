@@ -22,6 +22,7 @@ class CaseHardeningToolbox:
         self.input_file = heat_simulation_parameters.input_filename
         self._include_file_directory = heat_simulation_parameters.include_file_directory
         self._include_file_name = heat_simulation_parameters.include_file_name
+        self.geometry_scale_factor = heat_simulation_parameters.geometry_scale_factor
 
         self.material = heat_simulation_parameters.material
         self.boundary_condition_file = heat_simulation_parameters.bc_filename
@@ -764,7 +765,7 @@ class CaseHardeningToolbox:
 
     def write_geometry_files_for_dante(self):
         input_file_reader = InputFileReader()
-        input_file_reader.read_input_file(self.input_file)
+        input_file_reader.read_input_file(self.input_file, geometry_scale_factor=self.geometry_scale_factor)
 
         node_sets = input_file_reader.set_data['nset'].keys()
         element_sets = input_file_reader.set_data['elset'].keys()

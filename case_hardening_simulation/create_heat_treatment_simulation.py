@@ -76,6 +76,7 @@ class HeatTreatmentData:
         self.odb_directory = pathlib.Path(odb_directory).expanduser()
         self.simulation_directory = self.simulation_directory.expanduser()
         self.input_filename = pathlib.Path(read_keyword_parameter("model_file", "filename")).expanduser()
+        self.geometry_scale_factor = float(read_optional_parameter("model_file", "geometry_scale_factor", 1.))
         if not self.input_filename.is_file():
             raise ValueError("The specified input file ", self.input_filename, "does not exist!")
 
