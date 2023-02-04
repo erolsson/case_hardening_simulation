@@ -729,8 +729,8 @@ class CaseHardeningToolbox:
         else:
             file_lines.append('${abq} j=Toolbox_Carbon_${sim_name} cpus=' + str(cpus) + ' interactive '
                               'user=' + str(package_directory / 'compiled_subroutines/carburization_subroutine.o'))
-        file_lines.extend(['${abq} python ${carbon_exp_script} odb_file_name=Toolbox_Carbon_${sim_name}.odb '
-                           'carbon_file_name=Toolbox_Carbon_${sim_name}.nod',
+        file_lines.extend(['${abq} python ${carbon_exp_script} --odb_file_name Toolbox_Carbon_${sim_name}.odb '
+                           '--carbon_file_name Toolbox_Carbon_${sim_name}.nod',
                            '${abq} j=Toolbox_Thermal_${sim_name} cpus=' + str(cpus) +
                            ' interactive user=${dante}',
                            '${abq} j=Toolbox_Mechanical_${sim_name} cpus=' + str(cpus) +
