@@ -10,7 +10,7 @@ import odbAccess
 from abaqusConstants import ELEMENT_NODAL
 import abaqusExceptions
 
-
+print(sys.version)
 # ------------------------------------------------------------------------------
 # Open specified file and return the file handle
 def open_file(inp_file, mode='r'):
@@ -155,7 +155,7 @@ def main(argv=None):
         argv = sys.argv
     # Parse command line options
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "h", ["help", "debug", "--odb_file_name", "--carbon_file_name"])
+        opts, args = getopt.getopt(sys.argv[1:], "h", ["help", "debug", "odb_file_name", "carbon_file_name"])
     except getopt.error as msg:
         print(msg)
         print("for help use --help")
