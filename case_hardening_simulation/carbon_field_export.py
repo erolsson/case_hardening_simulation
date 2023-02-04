@@ -160,7 +160,7 @@ def main(argv=None):
         print(msg)
         print("for help use --help")
         sys.exit(2)
-
+    print(args)
     # Process passed options ()
     for o, a in opts:
         if o in ("-h", "--help"):   # Print help message
