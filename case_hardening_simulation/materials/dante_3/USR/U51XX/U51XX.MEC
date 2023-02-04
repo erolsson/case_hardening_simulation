@@ -1,0 +1,202 @@
+**----------------------------------------------------------                        line 1
+**     DDDDDD       A      NN    N  TTTTTTT  EEEEEEE                                line 2
+**     D     D     A A     N N   N     T     E                                      line 3
+**     D     D    A   A    N  N  N     T     EEEEEEE                                line 4
+**     D     D   AAAAAAA   N   N N     T     E                                      line 5
+**     DDDDDD   A       A  N    NN     T     EEEEEEE                                line 6
+**                                                                                  line 7
+**                    Version 3_5a                                                  line 8
+**----------------------------------------------------------                        line 9
+**     Deformation Control Technology, Inc.                                         line 10
+**             All rights reserved                                                  line 11
+**                                                                                  line 12
+**     Latest modification: 09/22/2014                                              line 13
+**     Modified by: Charlie Li (Dante Solutions, Inc.)                              line 14
+**     IMPORTANT: The file format is fixed                                          line 15
+** ---------------------------------------------------------                        line 16
+**     Mechanical Data starts from here                                             line 17
+DEC2015        ! DATA version control  UPPERCASE                                    line 18
+U51XX          ! matnam must be UPPERCASE                                           line 19
+** ---------------------------------------------------------                        line 20
+** 27 plastic parameters for each phase                                             line 21
+** Aust.    Ferr.       Pear.       U_Bain.     L_Bain.     Mart.       T_Mart.     line 22
+1.9480E+01, 8.9825E+00, 8.9825E+00, 6.1036E+01, 6.1036E+01, 6.4000E+01, 6.1036E+01  line 23 V
+6.0299E+02, 1.9072E+03, 1.9072E+03, 8.2421E+02, 8.2421E+02, 5.1370E+02, 8.2421E+02  line 24 V
+3.4589E+01, 2.5848E-03, 2.5848E-03, 2.4035E+01, 2.4035E+01, 1.0520E+03, 2.4035E+01  line 25 Y
+3.4751E+03, 1.3108E+04, 1.3108E+04, 4.3888E+03, 4.3888E+03, 1.4800E+01, 4.3888E+03  line 26 Y
+9.8205E-01, 0.0000E+00, 0.0000E+00, 1.0524E-05, 1.0524E-05, 9.1480E-08, 1.0524E-05  line 27 f
+2.5940E+03, 8.7441E-03, 8.7441E-03, 1.5024E+03, 1.5024E+03, 6.2330E+01, 1.5024E+03  line 28 f
+4.2004E+04, 3.8417E+00, 3.8417E+00, 3.1270E+00, 3.1270E+00, 1.5254E-01, 3.1270E+00  line 29 rd1
+9.5318E+03, 2.2139E+01, 2.2139E+01, 1.4009E+02, 1.4009E+02, 3.6607E+02, 1.4009E+02  line 30 rd1
+2.2354E+03, 2.0341E+05, 2.0341E+05, 1.6270E+05, 1.6270E+05, 7.7360E+04, 1.6270E+05  line 31 h1
+1.9844E-01, 9.0201E+01, 9.0201E+01, 1.7081E+02, 1.7081E+02, 2.6500E+00, 1.7081E+02  line 32 h1
+1.1000E-04, 4.3240E+05, 4.3240E+05, 4.4897E+01, 4.4897E+01, 1.0000E+01, 4.4897E+01  line 33 rs1
+5.8832E+02, 1.0325E+04, 1.0325E+04, 8.8757E+07, 8.8757E+07, 5.3336E+03, 8.8757E+07  line 34 rs1
+2.1503E+04, 1.4973E+02, 1.4973E+02, 7.4089E+02, 7.4089E+02, 6.4728E-06, 7.4089E+02  line 35 Rd2
+1.2944E+04, 6.7300E+03, 6.7300E+03, 8.4830E+05, 8.4830E+05, 8.3886E+02, 8.4830E+05  line 36 Rd2
+1.6173E+03, 2.3086E+03, 2.3086E+03, 3.6682E+03, 3.6682E+03, 3.0740E+03, 3.6682E+03  line 37 H2
+4.0556E-01, 0.0000E+00, 0.0000E+00, 4.8027E-01, 4.8027E-01,-8.2460E-01, 4.8027E-01  line 38 H2
+3.3010E+01, 7.6012E+01, 7.6012E+01, 7.7570E+04, 7.7570E+04, 1.7566E+00, 7.7570E+04  line 39 Rs2
+9.2921E+03, 7.9349E+06, 7.9349E+06, 3.4162E+04, 3.4162E+04, 3.9541E+04, 3.4162E+04  line 40 Rs2
+2.1240E-03, 5.8469E-03, 5.8469E-03, 1.0085E-02, 1.0085E-02, 1.1600E-02, 1.0085E-02  line 41 Y
+7.7193E+02, 8.9511E+02, 8.9511E+02, 7.6417E+02, 7.6417E+02, 5.7940E+02, 7.6417E+02  line 42 Y
+1.1767E-01, 5.6585E-06, 5.6585E-06, 4.7763E-02, 4.7763E-02, 9.3420E-02, 4.7763E-02  line 43 Y
+3.6844E+06, 1.2000E+08, 1.2000E+08, 2.6033E+05, 2.6033E+05, 4.1180E+07, 2.6033E+05  line 44 h1
+2.9727E+03, 1.0678E+05, 1.0678E+05, 0.0000E+00, 0.0000E+00, 4.2059E+04, 0.0000E+00  line 45 h1
+1.6964E+06,-2.2074E+05,-2.2074E+05, 4.7209E+05, 4.7209E+05, 9.4670E+07, 4.7209E+05  line 46 H2
+1.7718E+03,-7.6867E+02,-7.6867E+02, 0.0000E+00, 0.0000E+00,-2.4821E+07, 0.0000E+00  line 47 H2
+5.0301E+02, 4.5353E-02, 4.5353E-02, 4.3378E+03, 4.3378E+03, 3.0000E+03, 4.3378E+03  line 48 Y
+1.6001E+02, 9.8003E+01, 9.8003E+01, 4.7838E+05, 4.7838E+05, 4.0375E+03, 4.7838E+05  line 49 Y
+** ---------------------------------------------------------                        line 50
+**  Young's Modulus:  E0 + E1*T + E2*T^2 + E3*T^3                                   line 51
+**     E0          E1           E2          E3                                      line 52
+  2.0650E+05, -3.8000E+01, -9.1500E-02, -2.7500E-06                                 line 53
+**  Poisson's Ratio:  nu0 + nu1*T                                                   line 54
+**   nu0         nu1                                                                line 55
+  2.82E-1,   3.0000E-05                                                             line 56
+** ---------------------------------------------------------                        line 57
+**  Trip parameters:                                                                line 58
+**  paramA1  paramA2    param_b   param_m                                           line 59
+    1.10,  1.28E-03,   186.165048,  2.141388508                                     line 60
+** ---------------------------------------------------------                        line 61
+**  Latent Heat   0.59,  0.59,  0.59,   0.59,   0.64,  0.00                         line 62
+** A-->F  A-->P  A-->UB  A-->LB  A-->M  M-->TM                                      line 63
+   0.59,  0.59,  0.59,   0.59,   0.64,  0.00                                        line 64
+** ---------------------------------------------------------                        line 65
+**  Specific Heat of all the 7 phases  (2nd term is linear temperature dependent)   line 66
+**  Austenite                                                                       line 67
+  365.0,  0.2938                                                                    line 68
+**  Ferrite                                                                         line 69
+  450.0,  0.3875                                                                    line 70
+**  Pearlite                                                                        line 71
+  450.0,  0.3875                                                                    line 72
+**  Upper Bainite                                                                   line 73
+  450.0,  0.3875                                                                    line 74
+**  Lower Bainite                                                                   line 75
+  450.0,  0.3875                                                                    line 76
+**  Martensite                                                                      line 77
+  450.0,  0.3875                                                                    line 78
+**  Tempered Martensite                                                             line 79
+  450.0,  0.3875                                                                    line 80
+** ---------------------------------------------------------                        line 81
+**  Thermal Conductivity (2nd term is linear temperature dependent)                 line 82
+**  Austenite                                                                       line 83
+  0.016,  1.3e-5                                                                    line 84
+**  Ferrite                                                                         line 85
+  0.059,  -2.25e-5                                                                  line 86
+**  Pearlite                                                                        line 87
+  0.043,  -1.9e-5                                                                   line 88
+**  Upper Bainite                                                                   line 89
+  0.040,  -2.3e-5                                                                   line 90
+**  Lower Bainite                                                                   line 91
+  0.040,  -2.3e-5                                                                   line 92
+**  Martensite                                                                      line 93
+  0.025,  3.0e-6                                                                    line 94
+**  Tempered Martensite                                                             line 95
+  0.025,  3.0e-6                                                                    line 96
+** ---------------------------------------------------------                        line 97
+**  CTE and Transformation Strain                                                   line 98
+**--Austenite:  a1+a2*C+a3*T                                                        line 99
+**    a1       a2         a3                                                        line 100
+  -0.0229, 0.01237, 2.267e-05                                                       line 101
+**--Ferrite:   m1+m2*C+m3*T+m4*C*T+m5*T^2+m6*C*T^2                     (A<-->F)     line 102
+**    m1        m2        m3          m4         m5        m6                       line 103
+  -0.012572, 0.0090506, 1.146e-5, 2.2117656e-6, 3.55e-9, -4.97342e-10               line 104
+**--Pearlite:  m1+m2*C+m3*T+m4*C*T+m5*T^2+m6*C*T^2                     (A<-->P)     line 105
+**    m1        m2        m3          m4         m5        m6                       line 106
+  -0.012572, 0.0090506, 1.146e-5, 2.2117656e-6, 3.55e-9, -4.97342e-10               line 107
+**--Upper Bainite:  m1+m2*C+m3*T+m4*C*T+m5*T^2+m6*C*T^2                (A<-->UB)    line 108
+**    m1        m2        m3          m4         m5        m6                       line 109
+  -0.012572, 0.0090506, 1.146e-5, 2.2117656e-6, 3.55e-9, -4.97342e-10               line 110
+**--Lower Bainite:  m1+m2*C+m3*T+m4*C*T+m5*T^2+m6*C*T^2                (A<-->LB)    line 111
+**    m1        m2        m3          m4         m5        m6                       line 112
+  -0.012572, 0.0090506, 1.146e-5, 2.2117656e-6, 3.55e-9, -4.97342e-10               line 113
+**--Martensite:  m1+m2*C+m3*C^2+m4*T+m5*C*T+m6*T^2+m7*C*T^2+m8*T^3     (A<-->M)     line 114
+**    m1         m2         m3      m4       m5      m6      m7       m8            line 115
+  -0.009882, -0.0003061, 0.01430, 1.3e-5, -4.3e-6, 2.9e-9, 1.4e-9, 1.091e-12        line 116
+**--Tempered Mart.:  m1+m2*C+m3*C^2+m4*T+m5*C*T+m6*T^2+m7*C*T^2+m8*T^3  (M<-->TM)   line 117
+**    m1        m2        m3          m4         m5        m6                       line 118
+  -0.009882, -0.0003061, 0.01430, 1.3e-5, -4.3e-6, 2.9e-9, 1.4e-9, 1.091e-12        line 119
+** ---------------------------------------------------------                        line 120
+**  Equilibrium Heat up (Austenization) kinetics:  3 kinetics parameters            line 121
+**  explanations                                                                    line 122
+  760.0, 901.767, 203.0                                                             line 123
+** ---------------------------------------------------------                        line 124
+**  Hardness Data:  Updated for Feb UMAT on 9/12/2014                               line 125
+**  ncl = number of carbon levels                                                   line 126
+ 6                                                                                  line 127
+** Individual Phase Hardness(HRC) at Room Temperature for Each Carbon Levels        line 128
+**  Carbon level vpc(i): 0.1% -----------------------------------                   line 129
+ 0.1                                                                                line 130
+** HRC-AUST--HRC-FERR--HRC-PEAR--HRC-MART---TMART1---TMART2  (Hardness)             line 131
+   21.0,       21.0,     23.0,      45.0,    41.0,    38.0                          line 132
+** Temp1----Temp2  (Temper Temperature in C for Martensite)                         line 133
+   150.0,   200.0                                                                   line 134
+** Bs--------Bm---------Bf(C) (Temperature range for UBAIN and LBAIN formation)     line 135
+   560.0,    450.0,    400.0                                                        line 136
+** HRC-UBAINH--UBAINL--LBAINH--LBAINL  (UBAIN and LBAIN Hardness)                   line 137
+        28.0,   32.0,   34.0,   37.0                                                line 138
+** Initial Hardness of Bainite and Tempered Martensite                              line 139
+   34.0,   41.0                                                                     line 140
+**  Carbon level vpc(i): 0.2% -----------------------------------                   line 141
+ 0.2                                                                                line 142
+** HRC-AUST--HRC-FERR--HRC-PEAR--HRC-MART---TMART1---TMART2  (Hardness)             line 143
+   23.0,       21.0,     25.0,      50.0,    46.0,    43.0                          line 144
+** Temp1----Temp2  (Temper Temperature in C for Martensite)                         line 145
+   150.0,   200.0                                                                   line 146
+** Bs--------Bm---------Bf(C) (Temperature range for UBAIN and LBAIN formation)     line 147
+   560.0,    450.0,    400.0                                                        line 148
+** HRC-UBAINH--UBAINL--LBAINH--LBAINL  (UBAIN and LBAIN Hardness)                   line 149
+        32.0,   36.0,   39.0,   42.0                                                line 150
+** Initial Hardness of Bainite and Tempered Martensite                              line 151
+   39.0,    46.0                                                                    line 152
+**  Carbon level vpc(i): 0.4% -----------------------------------                   line 153
+ 0.4                                                                                line 154
+** HRC-AUST--HRC-FERR--HRC-PEAR--HRC-MART---TMART1---TMART2  (Hardness)             line 155
+   26.0,       21.0,     28.0,      61.0,    56.0,    51.0                          line 156
+** Temp1----Temp2  (Temper Temperature in C for Martensite)                         line 157
+   150.0,   200.0                                                                   line 158
+** Bs--------Bm---------Bf(C) (Temperature range for UBAIN and LBAIN formation)     line 159
+   560.0,    450.0,    330.0                                                        line 160
+** HRC-UBAINH--UBAINL--LBAINH--LBAINL  (UBAIN and LBAIN Hardness)                   line 161
+         40.0,   44.0,   46.0,   50.0                                               line 162
+** Initial Hardness of Bainite and Tempered Martensite                              line 163
+   46.0,   56.0                                                                     line 164
+**  Carbon level vpc(i): 0.6% -----------------------------------                   line 165
+ 0.6                                                                                line 166
+** HRC-AUST--HRC-FERR--HRC-PEAR--HRC-MART---TMART1---TMART2  (Hardness)             line 167
+   29.0,       21.0,     31.0,      66.0,     61.0,   56.0                          line 168
+** Temp1----Temp2  (Temper Temperature in C for Martensite)                         line 169
+   150.0,   200.0                                                                   line 170
+** Bs--------Bm---------Bf(C) (Temperature range for UBAIN and LBAIN formation)     line 171
+   560.0,    450.0,    270.0                                                        line 172
+** HRC-UBAINH--UBAINL--LBAINH--LBAINL  (UBAIN and LBAIN Hardness)                   line 173
+         44.0,   48.0,   50.0,   54.0                                               line 174
+** Initial Hardness of Bainite and Tempered Martensite                              line 175
+   50.0,    61.0                                                                    line 176
+**  Carbon level vpc(i): 0.8% -----------------------------------                   line 177
+ 0.8                                                                                line 178
+** HRC-AUST--HRC-FERR--HRC-PEAR--HRC-MART---TMART1---TMART2  (Hardness)             line 179
+   32.0,       21.0,     35.0,      69.0,     64.0,   59.0                          line 180
+** Temp1----Temp2  (Temper Temperature in C for Martensite)                         line 181
+   150.0,   200.0                                                                   line 182
+** Bs--------Bm---------Bf(C) (Temperature range for UBAIN and LBAIN formation)     line 183
+   560.0,    450.0,    200.0                                                        line 184
+** HRC-UBAINH--UBAINL--LBAINH--LBAINL  (UBAIN and LBAIN Hardness)                   line 185
+         46.0,   50.0,   52.0,   56.0                                               line 186
+** Initial Hardness of Bainite and Tempered Martensite                              line 187
+   52.0,   64.0                                                                     line 188
+**  Carbon level vpc(i): 1.0% -----------------------------------                   line 189
+ 1.0                                                                                line 190
+** HRC-AUST--HRC-FERR--HRC-PEAR--HRC-MART---TMART1---TMART2  (Hardness)             line 191
+   35.0,       21.0,     39.0,      70.0,     65.0,   60.0                          line 192
+** Temp1----Temp2  (Temper Temperature in C for Martensite)                         line 193
+   150.0,   180.0                                                                   line 194
+** Bs--------Bm---------Bf(C) (Temperature range for UBAIN and LBAIN formation)     line 195
+   560.0,    450.0,    200.0                                                        line 196
+** HRC-UBAINH--UBAINL--LBAINH--LBAINL                                               line 197
+         48.0,   52.0,   54.0,   58.0                                               line 198
+** Initial Hardness of Bainite and Tempered Martensite                              line 199
+   54.0,   65.0                                                                     line 200
+* ---------------------------- END OF FILE -------------------------- 
+
