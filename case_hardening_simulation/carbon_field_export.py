@@ -155,12 +155,11 @@ def main(argv=None):
         argv = sys.argv
     # Parse command line options
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "h", ["help", "debug", "odb_file_name", "carbon_file_name"])
+        opts, args = getopt.getopt(sys.argv[1:], "h", ["help", "debug", "--odb_file_name", "--carbon_file_name"])
     except getopt.error as msg:
         print(msg)
         print("for help use --help")
         sys.exit(2)
-    print(args)
     # Process passed options ()
     for o, a in opts:
         if o in ("-h", "--help"):   # Print help message
