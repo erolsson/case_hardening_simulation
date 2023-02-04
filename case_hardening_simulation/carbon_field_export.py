@@ -1,7 +1,7 @@
 from __future__ import division, print_function
 
 # Python modules
-import getopt
+import argparse
 import os
 import sys
 
@@ -142,108 +142,19 @@ def main(argv=None):
     carbon_file_name     file      Name of the nodal carbon concentration file
     """
 
-    # Set initial values
-    print(sys.argv)
-    debug = True
-    odb_file_name = False
-    carbon_file_name = False
-    flat = True
+    parser = argparse.ArgumentParser("Processing args")
+    parser.add_argument("--odb_file_name", type=str, help="odb file top read")
+    parser.add_argument("--carbon_file_name", type=str, help="carbon file to write")
+    args = parser.parse_args()
 
-    print("\n")
-    print(" Checking arguments")
-    if argv is None:
-        argv = sys.argv
-    # Parse command line options
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], options="h",
-                                   long_options=["help", "debug", "odb_file_name", "carbon_file_name"])
-    except getopt.error as msg:
-        print(msg)
-        print("for help use --help")
-        sys.exit(2)
-    # Process passed options ()
-    for o, a in opts:
-        if o in ("-h", "--help"):   # Print help message
-            print(main.__doc__)
-            sys.exit(0)
-        if o in "--debug":   # Set debug mode
-            print(" NOTE: Using debug mode")
-            debug = True
-
-    # Print all received arguments
-    if debug:
-        print(" Received main args: ", args)
-
-    # Check all that all demanded arguments were received
-    try:
-        for arg in args:
-            if arg.startswith('odb_file_name'):
-                odb_file_name = os.path.abspath(arg.split('=')[1])
-                if not os.path.isfile(odb_file_name):
-                    sys.exit("        odb repository not found: %s " % odb_file_name)
-            elif arg.startswith('carbon_file_name'):
-                carbon_file_name = os.path.abspath(arg.split('=')[1])
-            elif arg.startswith('flat'):
-                flat = os.path.abspath(arg.split('=')[1])
-            elif '=' in arg:
-                print(" WARNING: The following argument is unknown: ", arg)
-            else:
-                odb_data_name = os.path.abspath(arg)
-                if not os.path.isfile(odb_data_name):
-                    sys.exit("        odb data file not found: %s " % odb_data_name)
-                if not odb_data_names:
-                    odb_data_names = [odb_data_name]
-                else:
-                    odb_data_names.append(odb_data_name)
-                del odb_data_name
-
-        if not odb_file_name:
-            print(" ERROR: The odbFileName was not defined, use syntax odbFileName=file.odb")
-            sys.exit(' ERROR: An odb-file was not passed, exiting.')
-
-        if not carbon_file_name:  # If odb-filename was not stated, use default name.
-            carbon_file_name = os.path.splitext(odb_file_name)[0] + '.carbon'
-
-        if debug:
-            print("\n carbonFileName={0}\n odbFileName={1}\n ".format(carbon_file_name, odb_file_name))
-    except SystemExit:
-        print(" ERROR: An error while checking the arguments main()")
-        raise
-    except:
-        print(" ERROR: An unknown error occurred while checking the arguments main(): %s" % sys.exc_info()[0])
-        raise
-
-    print("    Done")
-    
     # Set call working function
-    exit_status = carbon_field_export(odb_file_name=odb_file_name, carbon_file_name=carbon_file_name, flat=flat,
-                                      debug=debug)
+    exit_status = carbon_field_export(odb_file_name=args.odb_file_name, carbon_file_name=args.carbon_file_name,
+                                      flat=True, debug=False)
     
     if exit_status:
         print("\n Export completed")
     else:
         print(" Something went wrong.....")
-    
-    if debug:
-        pass
-        # print '\n Read Nodes: ',len(hOdb.geoData['Nodes'])
-        # print hOdb.geoData['Nodes']
-        # for NodeSetKey in hOdb.geoData['NodeSets'].keys():
-        #   print '\n Node Set: ',NodeSetKey
-        #   print  hOdb.geoData['NodeSets'][NodeSetKey]
-           
-        # print '\n Read Elements: ',len(hOdb.geoData['Elements'])
-        # print hOdb.geoData['Elements']
-        # for ElementSetKey in hOdb.geoData['ElementSets'].keys():
-        #   print '\n Element Set: ',ElementSetKey
-        #   print  hOdb.geoData['ElementSets'][ElementSetKey]
-
-        # print "\n Sections:",hOdb.sectionData
-
-        # print "\n Materials:",hOdb.materialData
-
-        # print "\n\n\n ", hOdb.geoData
-
 
 if __name__ == "__main__":
     main()
