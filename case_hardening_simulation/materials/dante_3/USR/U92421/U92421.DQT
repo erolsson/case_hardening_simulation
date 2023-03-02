@@ -125,30 +125,30 @@ U92421         ! matnam must be UPPERCASE
    0.70E+1  0.52E+0  0.8E+0  0.2E+0  0.13E+0  0.74E+0  0.4E+0
 ** Austenite-->Martensite
 3.39528004e+02
-1.13605729e-02                 !mobility
+1.13605729e-02              !mobility
 0.00000000E-02              !alpha
 0.00000000E-02              !beta
  0.000000E-01               !epsilon_m
 ** Austenite-->Ferrite
  550.0                     !1 Lower T Bound  T1
  715.0                     !2 Upper T Bound  T2
-2.81499665e-02             !3 nu
-3.42642113e-01             !4 w1
-1.31725061e+00             !5 w2
-8.65507588e+02             !6 tau1
-6.01615414e+01             !7 tau2
--1.52580241e+00            !8 alpha
--1.79794812e+00            !9 beta-1
+5.21964841e-03             !3 nu
+2.30869381e+00             !4 w1
+1.68737762e+00             !5 w2
+8.18362649e+02             !6 tau1
+1.20106144e+02             !7 tau2
+5.25687378e-01             !8 alpha
+-1.46073185e-01            !9 beta-1
 ** Austenite-->Pearlite
- 550.0                         !1 Lower T Bound  T1
-  7.03174194e+02               !2 Lower T Bound  T2
-8.24512303e-03                !3 nu
-1.40503563e+00               !4 w1
--1.85435758e-02               !5 w2
-7.94209800e+02                !6 tau1
-5.49873342e+01                !7 tau2
-8.07873235e-01                !8 alpha
-1.08999560e+00                !9 beta-1
+5.66828671e+02             !1 Lower T Bound  T1
+7.66880745e+02             !2 Lower T Bound  T2
+1.09575411e-03             !3 nu
+4.21665167e+00             !4 w1
+6.85157022e-01             !5 w2
+7.97592198e+02             !6 tau1
+1.09618824e+02             !7 tau2
+5.96097886e-01             !8 alpha
+2.21930891e-01             !9 beta-1
 ** Austenite-->Bainite
 3.34948215e+02                    !1  Lower T Bound
  450.0                      !2  LB and UB Separation T
