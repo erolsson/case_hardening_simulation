@@ -337,7 +337,7 @@ class CaseHardeningToolbox:
         self._carbon_file_lines.append('\t*MASS DIFFUSION, DCMAX=0.1')
         self._carbon_file_lines.append('\t\t0.2,  ' + str(t2 - t1) + ', 1e-05,  10000')
         self._carbon_file_lines.append('\t*TEMPERATURE, AMPLITUDE=temperature')
-        self._carbon_file_lines.append('\t\tAll_Nodes')
+        self._carbon_file_lines.append('\t\tAll_Nodes, 1')
         if self.carburization_bc == "carbon_potential":
             self._carbon_file_lines.append('\t*BOUNDARY, AMPLITUDE=carbon_potential')
             self._carbon_file_lines.append('\t\tEXPOSED_NODES, 11, 11, 1.')

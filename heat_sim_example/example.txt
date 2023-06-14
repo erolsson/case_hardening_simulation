@@ -12,7 +12,7 @@
 *bc_file, filename=~/case_hardening_simulation/heat_sim_example/model_files/bc_simple_geometry.inc
 
 ** Directory where the simulation will be done, should preferably be on a local disc
-*simulation_directory, directory=~/heat_simulation_test/simulation_1/
+*simulation_directory, directory=~/heat_simulation_test/U92421/
 
 ** Directory where the odb files are moved after the simulation, if omitted, the simulation
 **   files stays in simulation_directory
@@ -20,12 +20,12 @@
 
 ** Name of the Dante material, a list of available materials can be found by
 ** 	case_hardening_simulation -l dante_materials [optionals: config_file, dante_material_path]
-*material, dante_material_name=U92506
+*material, dante_material_name=U92421
 
 ** A table with two columns  with heat treatment data on the form:
 **   time point (minutes), carbon potential (%wt)
 ** The first time point has to be zero and thus sets the initial conditions
-*carbon_potential, boundary_condition=mass_transfer
+*carbon_potential, boundary_condition=carbon_potential
 	0,	   0.6
 	120.,  0.6
 	121.,  1.2
